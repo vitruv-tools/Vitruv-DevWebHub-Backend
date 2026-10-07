@@ -38,7 +38,7 @@ public class CreateAscetTaskRoutine extends AbstractRoutine {
       InputOutput.<String>println(("  - Container: " + container));
 
       // Yes/no gate: should a corresponding ASCET task be created at all?
-      final Boolean createCorresponding = this.executionState.getUserInteractor()
+      final Boolean createCorresponding = this.executionState.userInteractor()
           .getConfirmationDialogBuilder()
           .message("A Task has been created. Create a corresponding ASCET Task?")
           .positiveButtonText("Yes")
@@ -57,7 +57,7 @@ public class CreateAscetTaskRoutine extends AbstractRoutine {
       final String doNothingOption = "Decide Later";
       final String[] options = { initTaskOption, periodicTaskOption, softwareTaskOption, timeTableTaskOption, doNothingOption };
       InputOutput.<String>println("[Reaction] About to call userInteractor.startInteraction()...");
-      final Integer selected = this.executionState.getUserInteractor().getSingleSelectionDialogBuilder().message(userMsg).choices(((Iterable<String>)Conversions.doWrapArray(options))).startInteraction();
+      final Integer selected = this.executionState.userInteractor().getSingleSelectionDialogBuilder().message(userMsg).choices(((Iterable<String>)Conversions.doWrapArray(options))).startInteraction();
       if (selected != null) {
         switch (selected) {
           case 0:
