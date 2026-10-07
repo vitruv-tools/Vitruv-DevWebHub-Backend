@@ -16,56 +16,56 @@ public class Amalthea2ascetRoutinesFacade extends AbstractRoutinesFacade {
 
   public boolean createAndRegisterRootComponentContainer(final ComponentContainer componentContainer) {
     Amalthea2ascetRoutinesFacade _routinesFacade = this;
-    ReactionExecutionState _executionState = _getExecutionState();
-    CallHierarchyHaving _caller = this._getCurrentCaller();
+    ReactionExecutionState _executionState = getExecutionState();
+    CallHierarchyHaving _caller = this.getCurrentCaller();
     CreateAndRegisterRootComponentContainerRoutine routine = new CreateAndRegisterRootComponentContainerRoutine(_routinesFacade, _executionState, _caller, componentContainer);
     return routine.execute();
   }
 
   public boolean deleteTask(final Task task, final ComponentContainer container) {
     Amalthea2ascetRoutinesFacade _routinesFacade = this;
-    ReactionExecutionState _executionState = _getExecutionState();
-    CallHierarchyHaving _caller = this._getCurrentCaller();
+    ReactionExecutionState _executionState = getExecutionState();
+    CallHierarchyHaving _caller = this.getCurrentCaller();
     DeleteTaskRoutine routine = new DeleteTaskRoutine(_routinesFacade, _executionState, _caller, task, container);
     return routine.execute();
   }
 
   public boolean createAscetTask(final Task task, final ComponentContainer container) {
     Amalthea2ascetRoutinesFacade _routinesFacade = this;
-    ReactionExecutionState _executionState = _getExecutionState();
-    CallHierarchyHaving _caller = this._getCurrentCaller();
+    ReactionExecutionState _executionState = getExecutionState();
+    CallHierarchyHaving _caller = this.getCurrentCaller();
     CreateAscetTaskRoutine routine = new CreateAscetTaskRoutine(_routinesFacade, _executionState, _caller, task, container);
     return routine.execute();
   }
 
   public boolean createInitTask(final Task task, final ComponentContainer container) {
     Amalthea2ascetRoutinesFacade _routinesFacade = this;
-    ReactionExecutionState _executionState = _getExecutionState();
-    CallHierarchyHaving _caller = this._getCurrentCaller();
+    ReactionExecutionState _executionState = getExecutionState();
+    CallHierarchyHaving _caller = this.getCurrentCaller();
     CreateInitTaskRoutine routine = new CreateInitTaskRoutine(_routinesFacade, _executionState, _caller, task, container);
     return routine.execute();
   }
 
   public boolean createPeriodicTask(final Task task, final ComponentContainer container) {
     Amalthea2ascetRoutinesFacade _routinesFacade = this;
-    ReactionExecutionState _executionState = _getExecutionState();
-    CallHierarchyHaving _caller = this._getCurrentCaller();
+    ReactionExecutionState _executionState = getExecutionState();
+    CallHierarchyHaving _caller = this.getCurrentCaller();
     CreatePeriodicTaskRoutine routine = new CreatePeriodicTaskRoutine(_routinesFacade, _executionState, _caller, task, container);
     return routine.execute();
   }
 
   public boolean createSoftwareTask(final Task task, final ComponentContainer container) {
     Amalthea2ascetRoutinesFacade _routinesFacade = this;
-    ReactionExecutionState _executionState = _getExecutionState();
-    CallHierarchyHaving _caller = this._getCurrentCaller();
+    ReactionExecutionState _executionState = getExecutionState();
+    CallHierarchyHaving _caller = this.getCurrentCaller();
     CreateSoftwareTaskRoutine routine = new CreateSoftwareTaskRoutine(_routinesFacade, _executionState, _caller, task, container);
     return routine.execute();
   }
 
   public boolean createTimeTableTask(final Task task, final ComponentContainer container) {
     Amalthea2ascetRoutinesFacade _routinesFacade = this;
-    ReactionExecutionState _executionState = _getExecutionState();
-    CallHierarchyHaving _caller = this._getCurrentCaller();
+    ReactionExecutionState _executionState = getExecutionState();
+    CallHierarchyHaving _caller = this.getCurrentCaller();
     CreateTimeTableTaskRoutine routine = new CreateTimeTableTaskRoutine(_routinesFacade, _executionState, _caller, task, container);
     return routine.execute();
   }

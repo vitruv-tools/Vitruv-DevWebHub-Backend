@@ -22,15 +22,20 @@ public class IdTransformation {
    * @param vsumPath the path to the .vsum file of the project
    */
   public IdTransformation(Path vsumPath) {
-    root = URI.createFileURI(ProjectMarker.getProjectRootFolder(vsumPath).toString());
+    root =
+        URI.createFileURI(
+            ProjectMarker.getProjectRootFolder(vsumPath)
+                .orElseThrow(
+                    () -> new IllegalStateException("No project root found for " + vsumPath))
+                .toString());
 
     var nextToCheck = vsumPath;
     while ((nextToCheck = nextToCheck.getParent()) != null) {
-      try {
-        root = URI.createFileURI(ProjectMarker.getProjectRootFolder(nextToCheck).toString());
-      } catch (IllegalStateException e) {
+      var parentRoot = ProjectMarker.getProjectRootFolder(nextToCheck);
+      if (parentRoot.isEmpty()) {
         break;
       }
+      root = URI.createFileURI(parentRoot.get().toString());
     }
   }
 

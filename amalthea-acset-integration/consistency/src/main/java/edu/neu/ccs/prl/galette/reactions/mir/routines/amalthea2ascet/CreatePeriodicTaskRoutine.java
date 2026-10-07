@@ -112,10 +112,10 @@ public class CreatePeriodicTaskRoutine extends AbstractRoutine {
       final String periodMessage = "Please enter the period of the new task (positive double)";
       final String delayMessage = "Please enter the delay of the new task (positive double)";
       final Double period = Double.valueOf(Double.parseDouble(
-          this.executionState.getUserInteractor().getTextInputDialogBuilder().message(periodMessage).inputValidator(PositiveDoubleValidator.getPositiveDoubleValidatorInstance()).startInteraction()));
+          this.executionState.userInteractor().getTextInputDialogBuilder().message(periodMessage).inputValidator(PositiveDoubleValidator.getPositiveDoubleValidatorInstance()).startInteraction()));
       periodicTask.setPeriod((period).doubleValue());
       final Double delay = Double.valueOf(Double.parseDouble(
-          this.executionState.getUserInteractor().getTextInputDialogBuilder().message(delayMessage).inputValidator(PositiveDoubleValidator.getPositiveDoubleValidatorInstance()).startInteraction()));
+          this.executionState.userInteractor().getTextInputDialogBuilder().message(delayMessage).inputValidator(PositiveDoubleValidator.getPositiveDoubleValidatorInstance()).startInteraction()));
       periodicTask.setDelay((delay).doubleValue());
 
       this.addCorrespondenceBetween(periodicTask, container);
