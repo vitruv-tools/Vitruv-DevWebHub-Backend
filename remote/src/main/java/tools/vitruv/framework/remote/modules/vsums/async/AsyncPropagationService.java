@@ -71,11 +71,13 @@ public class AsyncPropagationService {
     try {
       ServerInteractionResultProvider.setCurrentTaskId(taskId);
       if (encodedResourceSet != null && !encodedResourceSet.isBlank()) {
-        viewService.commitResourceSet(viewWrapper, encodedResourceSet);
+        // Reactions can park on a user prompt while the commit is still running, so the
+        // submitted model has to be available to the hub before the commit returns.
         AsyncTaskStatus status = taskRegistry.getTaskStatus(taskId);
         if (status != null) {
           status.setCommittedResourceSet(encodedResourceSet);
         }
+        viewService.commitResourceSet(viewWrapper, encodedResourceSet);
         viewService.saveViewSnapshot(viewWrapper);
       }
       String updatedResourceSet = viewService.update(viewWrapper);

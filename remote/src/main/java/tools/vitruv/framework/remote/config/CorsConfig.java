@@ -38,6 +38,7 @@ public class CorsConfig {
         "Content-Type",
         "Accept",
         "Authorization",
+        "X-Profile-Token",
         "Access-Control-Allow-Origin"
     ));
     config.setAllowedMethods(List.of(
