@@ -505,7 +505,122 @@ paths:
               schema:
                 $ref: "#/components/schemas/VitruvServerInfo"
 
+  /api/v1/users/session:
+    post:
+      summary: "POST api/v1/users/session"
+      description: "Creates or updates a user and returns a profile token. Sign-in replaces the token when the caller does not send the current one, so a returning user can sign in again. Reading or changing the profile still requires the latest token."
+      operationId: "signInUser"
+      parameters:
+        - $ref: "#/components/parameters/ProfileToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertUserRequest"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfileResponse"
+        "401":
+          description: "Profile token is required"
+
+  /api/v1/users:
+    get:
+      summary: "GET api/v1/users"
+      description: "Lists users for display. Email addresses and metamodel selections are omitted."
+      operationId: "listUsers"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/UserProfileResponse"
+
+  /api/v1/users/knowledge-metamodels:
+    get:
+      summary: "GET api/v1/users/knowledge-metamodels"
+      description: "Lists individual metamodels taken from each provider ecore package name."
+      operationId: "listKnowledgeMetamodels"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/KnowledgeMetamodel"
+
+  /api/v1/users/{username}:
+    get:
+      summary: "GET api/v1/users/{username}"
+      description: "Returns one profile, including email and metamodel selections. Requires the profile token issued at sign-in."
+      operationId: "getUser"
+      parameters:
+        - $ref: "#/components/parameters/Username"
+        - $ref: "#/components/parameters/ProfileToken"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfileResponse"
+        "401":
+          description: "Profile token is required"
+        "404":
+          description: "User not found"
+
+  /api/v1/users/{username}/metamodels:
+    put:
+      summary: "PUT api/v1/users/{username}/metamodels"
+      description: "Replaces the metamodels this user knows. Unknown names are rejected. Requires the profile token issued at sign-in."
+      operationId: "updateUserMetamodels"
+      parameters:
+        - $ref: "#/components/parameters/Username"
+        - $ref: "#/components/parameters/ProfileToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMetamodelsRequest"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfileResponse"
+        "400":
+          description: "Unknown metamodel"
+        "401":
+          description: "Profile token is required"
+        "404":
+          description: "User not found"
+
 components:
+  parameters:
+    Username:
+      name: "username"
+      in: "path"
+      required: true
+      schema:
+        type: "string"
+    ProfileToken:
+      name: "X-Profile-Token"
+      in: "header"
+      required: false
+      description: "Secret returned by POST /api/v1/users/session. Required to read or change that profile."
+      schema:
+        type: "string"
   schemas:
     VsumInfoResponseBody:
       type: "object"
@@ -670,6 +785,11 @@ components:
         resolutionComment:
           type: "string"
           nullable: true
+        involvedMetamodels:
+          type: "array"
+          description: "Ecore package names involved in this inconsistency, such as amalthea and ascet."
+          items:
+            type: "string"
 
     CreateInconsistencyCommentRequest:
       type: "object"
@@ -805,3 +925,67 @@ components:
         encodedResourceSet:
           type: "string"
           description: "JSON array of view resources (same format as POST /v1/views resourceSet)"
+
+    UpsertUserRequest:
+      type: "object"
+      required: ["username"]
+      properties:
+        username:
+          type: "string"
+        displayName:
+          type: "string"
+          nullable: true
+        email:
+          type: "string"
+          nullable: true
+
+    UpdateMetamodelsRequest:
+      type: "object"
+      properties:
+        metamodels:
+          type: "array"
+          items:
+            type: "string"
+
+    KnowledgeMetamodel:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+          description: "Ecore package name, such as amalthea."
+        label:
+          type: "string"
+
+    UserProfileResponse:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        username:
+          type: "string"
+        displayName:
+          type: "string"
+          nullable: true
+        email:
+          type: "string"
+          nullable: true
+          description: "Omitted from GET /api/v1/users."
+        createdAt:
+          type: "string"
+          format: "date-time"
+          nullable: true
+        lastLoginAt:
+          type: "string"
+          format: "date-time"
+          nullable: true
+        metamodels:
+          type: "array"
+          description: "Ecore package names this user knows. Empty in GET /api/v1/users."
+          items:
+            type: "string"
+        profileToken:
+          type: "string"
+          nullable: true
+          description: "Returned by sign-in when the caller is allowed to act as this user. Send it as X-Profile-Token afterwards."
+

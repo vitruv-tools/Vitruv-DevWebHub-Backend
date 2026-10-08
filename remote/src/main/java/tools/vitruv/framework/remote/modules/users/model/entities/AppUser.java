@@ -36,6 +36,10 @@ public class AppUser extends BaseEntity {
 
   private Instant lastLoginAt;
 
+  /** SHA-256 hex of the secret returned once when this profile is claimed. */
+  @Column(length = 64)
+  private String profileTokenHash;
+
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<UserMetamodel> metamodels = new ArrayList<>();
 }

@@ -12,6 +12,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -20,6 +21,7 @@ import java.util.stream.Stream;
  * Individual metamodels a user can claim knowledge of.
  * Names come from the {@code name} attribute of each provider's {@code ecore-models/*.ecore} package,
  * not from the provider folder (for example {@code amalthea} and {@code ascet}, not {@code AmaltheaAscet}).
+ * Package lists are cached until an {@code .ecore} file in that folder changes size or last-modified time.
  */
 @Service
 @RequiredArgsConstructor
@@ -30,6 +32,10 @@ public class KnowledgeMetamodelCatalog {
   );
 
   private final VsumProperties vsumProperties;
+  private final ConcurrentHashMap<Path, CachedPackages> packageCache = new ConcurrentHashMap<>();
+
+  private record CachedPackages(long stamp, List<String> names) {
+  }
 
   public record KnowledgeMetamodel(String name, String label) {
   }
@@ -45,7 +51,7 @@ public class KnowledgeMetamodelCatalog {
     Path ecoreDir = Path.of(vsumProperties.vsumProvidersDir())
         .resolve(providerName)
         .resolve("ecore-models");
-    return readPackageNames(ecoreDir);
+    return cachedPackageNames(ecoreDir);
   }
 
   /**
@@ -72,7 +78,7 @@ public class KnowledgeMetamodelCatalog {
       providers.filter(Files::isDirectory)
           .sorted(Comparator.comparing(path -> path.getFileName().toString()))
           .forEach(provider -> {
-            for (String name : readPackageNames(provider.resolve("ecore-models"))) {
+            for (String name : cachedPackageNames(provider.resolve("ecore-models"))) {
               byName.putIfAbsent(name, new KnowledgeMetamodel(name, labelFor(name)));
             }
           });
@@ -96,6 +102,49 @@ public class KnowledgeMetamodelCatalog {
       return name;
     }
     return Character.toUpperCase(name.charAt(0)) + name.substring(1);
+  }
+
+  private List<String> cachedPackageNames(Path ecoreDir) {
+    Path key;
+    try {
+      key = ecoreDir.toAbsolutePath().normalize();
+    } catch (RuntimeException e) {
+      key = ecoreDir;
+    }
+    long stamp = directoryStamp(key);
+    CachedPackages cached = packageCache.get(key);
+    if (cached != null && stamp != -1L && cached.stamp() == stamp) {
+      return cached.names();
+    }
+    List<String> names = List.copyOf(readPackageNames(key));
+    if (stamp != -1L) {
+      packageCache.put(key, new CachedPackages(stamp, names));
+    }
+    return names;
+  }
+
+  /**
+   * Changes when an ecore file is added, removed, or rewritten, which refreshes the cache.
+   */
+  private static long directoryStamp(Path ecoreDir) {
+    if (!Files.isDirectory(ecoreDir)) {
+      return 0L;
+    }
+    long stamp = 17L;
+    try (Stream<Path> files = Files.list(ecoreDir)) {
+      List<Path> ecoreFiles = files.filter(Files::isRegularFile)
+          .filter(path -> path.getFileName().toString().endsWith(".ecore"))
+          .sorted(Comparator.comparing(path -> path.getFileName().toString()))
+          .toList();
+      for (Path file : ecoreFiles) {
+        stamp = stamp * 31 + file.getFileName().toString().hashCode();
+        stamp = stamp * 31 + Files.getLastModifiedTime(file).toMillis();
+        stamp = stamp * 31 + Files.size(file);
+      }
+      return stamp;
+    } catch (IOException e) {
+      return -1L;
+    }
   }
 
   private static List<String> readPackageNames(Path ecoreDir) {
