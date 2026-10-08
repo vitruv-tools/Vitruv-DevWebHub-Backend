@@ -41,30 +41,24 @@ class UserProfileControllerTest {
     }
 
     @Test
-    void signInReissuesALostTokenAndLaterCallsMustPresentTheNewOne() throws Exception {
-        String first = signIn("ada", "Ada Lovelace", "ada@example.com");
+    void signInIssuesATokenThenRequiresItToUpdateAndRead() throws Exception {
+        String token = signIn("ada", "Ada Lovelace", "ada@example.com");
 
         mvc.perform(get("/v1/users/ada"))
                 .andExpect(status().isUnauthorized());
 
-        String second = signIn("ada", "Ada Again", "ada@example.com");
-        org.junit.jupiter.api.Assertions.assertNotEquals(first, second);
-
-        mvc.perform(get("/v1/users/ada").header(TOKEN, first))
-                .andExpect(status().isUnauthorized());
-
-        mvc.perform(get("/v1/users/ada").header(TOKEN, second))
+        mvc.perform(get("/v1/users/ada").header(TOKEN, token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.displayName").value("Ada Again"))
+                .andExpect(jsonPath("$.displayName").value("Ada Lovelace"))
                 .andExpect(jsonPath("$.email").value("ada@example.com"));
 
         mvc.perform(post("/v1/users/session")
-                        .header(TOKEN, second)
+                        .header(TOKEN, token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(sessionBody("ada", "Ada", "ada@example.com")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.displayName").value("Ada"))
-                .andExpect(jsonPath("$.profileToken").value(second));
+                .andExpect(jsonPath("$.profileToken").value(token));
 
         mvc.perform(get("/v1/users"))
                 .andExpect(status().isOk())
@@ -72,6 +66,48 @@ class UserProfileControllerTest {
                 .andExpect(jsonPath("$[0].email").value(nullValue()))
                 .andExpect(jsonPath("$[0].metamodels", empty()))
                 .andExpect(jsonPath("$[0].profileToken").value(nullValue()));
+    }
+
+    @Test
+    void signInDoesNotResetAnExistingProfileWithoutTheCurrentToken() throws Exception {
+        String token = signIn("ada", "Ada Lovelace", "ada@example.com");
+
+        mvc.perform(post("/v1/users/session")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(sessionBody("ada", "Intruder", "intruder@example.com")))
+                .andExpect(status().isUnauthorized());
+
+        mvc.perform(post("/v1/users/session")
+                        .header(TOKEN, "wrong-token")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(sessionBody("ada", "Intruder", "intruder@example.com")))
+                .andExpect(status().isUnauthorized());
+
+        mvc.perform(get("/v1/users/ada").header(TOKEN, token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.displayName").value("Ada Lovelace"))
+                .andExpect(jsonPath("$.email").value("ada@example.com"));
+    }
+
+    @Test
+    void sharedDemoSignInReclaimsTheTokenWhenTheBrowserHasNone() throws Exception {
+        String first = signIn("demo", "Demo User", "demo@local");
+
+        String second = signIn("demo", "Demo User", "demo@local");
+        org.junit.jupiter.api.Assertions.assertNotEquals(first, second);
+
+        mvc.perform(get("/v1/users/demo").header(TOKEN, first))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(get("/v1/users/demo").header(TOKEN, second))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value("demo@local"));
+
+        mvc.perform(put("/v1/users/demo/metamodels")
+                        .header(TOKEN, second)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"metamodels\":[\"model\"]}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.metamodels", contains("model")));
     }
 
     @Test

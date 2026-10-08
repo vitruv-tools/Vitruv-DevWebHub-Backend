@@ -19,8 +19,9 @@ import tools.vitruv.framework.remote.modules.users.usecases.dtos.UserProfileResp
 
 /**
  * User profiles and the metamodels each user knows.
- * Reading or changing a profile requires the {@code X-Profile-Token} issued by sign-in.
- * The username in the path is not accepted as identity on its own.
+ * First sign-in issues an {@code X-Profile-Token}. Later sign-ins, reads, and
+ * updates must present that token. The username in the path is not accepted
+ * as identity on its own.
  */
 @RestController
 @RequestMapping("/v1/users")

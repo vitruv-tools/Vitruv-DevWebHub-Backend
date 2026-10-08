@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -28,37 +29,68 @@ public class UserProfileUseCases {
 
   public static final String PROFILE_TOKEN_HEADER = "X-Profile-Token";
 
+  /** Shared local Hub login from the frontend (`demo` / `demo`). */
+  static final String SHARED_DEMO_USERNAME = "demo";
+
   private static final SecureRandom RANDOM = new SecureRandom();
 
   private final AppUserRepo appUserRepo;
   private final KnowledgeMetamodelCatalog knowledgeMetamodelCatalog;
 
   /**
-   * Creates or updates a profile and returns a secret token.
-   * Sign-in always succeeds: this server does not verify the Methodologist login,
-   * so a returning user such as demo must be able to sign in again after the browser
-   * lost the previous token. Reading or changing the profile still requires the
-   * latest token, which sign-in replaces when the presented one is missing or wrong.
+   * Creates a profile on first sign-in and returns a secret token.
+   * Later sign-ins must present that token. A missing or wrong token does not
+   * reissue it or overwrite a normal profile. The shared {@code demo} login is
+   * the exception: any browser that signs in as demo may reclaim the token,
+   * because that account is a public local fallback, not a private identity.
    */
   @Transactional
   public UserProfileResponse signIn(UpsertUserRequest request, String presentedToken) {
     String username = requireUsername(request.username());
-    AppUser user = appUserRepo.findByUsernameIgnoreCase(username).orElseGet(AppUser::new);
     Instant now = Instant.now();
-    if (user.getCreatedAt() == null) {
+    Optional<AppUser> existing = appUserRepo.findByUsernameIgnoreCase(username);
+    if (existing.isEmpty()) {
+      AppUser user = new AppUser();
       user.setUsername(username);
       user.setCreatedAt(now);
+      return saveWithNewToken(user, request, username, now);
     }
-    String issued = null;
-    if (user.getProfileTokenHash() == null || !tokenMatches(user, presentedToken)) {
-      issued = newToken();
-      user.setProfileTokenHash(hash(issued));
+    AppUser user = existing.get();
+    if (tokenMatches(user, presentedToken)) {
+      applySignInFields(user, request, username, now);
+      return toResponse(appUserRepo.save(user), presentedToken);
     }
+    if (isSharedDemo(username)) {
+      return saveWithNewToken(user, request, username, now);
+    }
+    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Profile token is required");
+  }
+
+  private UserProfileResponse saveWithNewToken(
+      AppUser user,
+      UpsertUserRequest request,
+      String username,
+      Instant now
+  ) {
+    String issued = newToken();
+    user.setProfileTokenHash(hash(issued));
+    applySignInFields(user, request, username, now);
+    return toResponse(appUserRepo.save(user), issued);
+  }
+
+  private static boolean isSharedDemo(String username) {
+    return SHARED_DEMO_USERNAME.equalsIgnoreCase(username);
+  }
+
+  private static void applySignInFields(
+      AppUser user,
+      UpsertUserRequest request,
+      String username,
+      Instant now
+  ) {
     user.setDisplayName(displayName(request.displayName(), username));
     user.setEmail(blankToNull(request.email()));
     user.setLastLoginAt(now);
-    String tokenToReturn = issued != null ? issued : presentedToken;
-    return toResponse(appUserRepo.save(user), tokenToReturn);
   }
 
   /**
