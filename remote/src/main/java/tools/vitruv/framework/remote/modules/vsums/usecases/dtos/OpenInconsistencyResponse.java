@@ -3,6 +3,7 @@ package tools.vitruv.framework.remote.modules.vsums.usecases.dtos;
 import tools.vitruv.framework.remote.modules.vsums.model.entities.OpenInconsistencyState;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -21,6 +22,7 @@ public record OpenInconsistencyResponse(
     Instant resolvedAt,
     String resolvedBy,
     String resolutionChoice,
-    String resolutionComment
+    String resolutionComment,
+    List<String> involvedMetamodels
 ) {
 }

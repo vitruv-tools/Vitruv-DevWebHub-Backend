@@ -2,6 +2,8 @@ package tools.vitruv.framework.remote.helper;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import tools.vitruv.framework.remote.modules.users.model.entities.AppUserRepo;
+import tools.vitruv.framework.remote.modules.users.model.entities.UserMetamodelRepo;
 import tools.vitruv.framework.remote.modules.vsums.model.entities.InconsistencyCommentRepo;
 import tools.vitruv.framework.remote.modules.vsums.model.entities.OpenInconsistencyRepo;
 import tools.vitruv.framework.remote.modules.vsums.model.entities.ViewUpdateRepo;
@@ -15,11 +17,15 @@ public class TestDatabaseCleaner {
     private final VsumInfoRepo vsumInfoRepo;
     private final InconsistencyCommentRepo inconsistencyCommentRepo;
     private final OpenInconsistencyRepo openInconsistencyRepo;
+    private final UserMetamodelRepo userMetamodelRepo;
+    private final AppUserRepo appUserRepo;
 
     public void cleanAll() {
         inconsistencyCommentRepo.deleteAll();
         openInconsistencyRepo.deleteAll();
         viewUpdateRepo.deleteAll();
         vsumInfoRepo.deleteAll();
+        userMetamodelRepo.deleteAll();
+        appUserRepo.deleteAll();
     }
 }

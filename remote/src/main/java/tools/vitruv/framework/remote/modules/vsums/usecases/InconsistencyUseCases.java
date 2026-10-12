@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import tools.vitruv.framework.remote.modules.users.model.services.KnowledgeMetamodelCatalog;
 import tools.vitruv.framework.remote.modules.vsums.async.AsyncTaskStatus;
 import tools.vitruv.framework.remote.modules.vsums.async.PropagationTaskRegistry;
 import tools.vitruv.framework.remote.modules.vsums.model.entities.*;
@@ -30,6 +31,7 @@ public class InconsistencyUseCases {
   private final ViewService viewService;
   private final PropagationTaskRegistry taskRegistry;
   private final InconsistencyModelSnapshotEnricher modelSnapshotEnricher;
+  private final KnowledgeMetamodelCatalog knowledgeMetamodelCatalog;
   private final ObjectMapper objectMapper;
 
   /**
@@ -388,8 +390,17 @@ public class InconsistencyUseCases {
         entity.getResolvedAt(),
         entity.getResolvedBy(),
         entity.getResolutionChoice(),
-        entity.getResolutionComment()
+        entity.getResolutionComment(),
+        involvedMetamodels(metamodelName)
     );
+  }
+
+  private List<String> involvedMetamodels(String providerName) {
+    try {
+      return knowledgeMetamodelCatalog.packageNamesForProvider(providerName);
+    } catch (RuntimeException e) {
+      return List.of();
+    }
   }
 
   private InconsistencyCommentResponse toCommentResponse(InconsistencyComment comment) {
