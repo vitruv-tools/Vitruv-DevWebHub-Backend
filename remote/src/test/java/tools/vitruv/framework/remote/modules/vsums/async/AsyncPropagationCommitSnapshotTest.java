@@ -7,6 +7,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import tools.vitruv.framework.remote.modules.users.model.services.KnowledgeMetamodelCatalog;
+import tools.vitruv.framework.remote.modules.users.model.services.MentionService;
+import tools.vitruv.framework.remote.modules.vsums.model.entities.InconsistencyCommentMentionRepo;
 import tools.vitruv.framework.remote.modules.vsums.model.entities.InconsistencyCommentRepo;
 import tools.vitruv.framework.remote.modules.vsums.model.entities.OpenInconsistency;
 import tools.vitruv.framework.remote.modules.vsums.model.entities.OpenInconsistencyRepo;
@@ -112,6 +114,8 @@ class AsyncPropagationCommitSnapshotTest {
                     registry,
                     enricher,
                     mock(KnowledgeMetamodelCatalog.class),
+                    mock(InconsistencyCommentMentionRepo.class),
+                    mock(MentionService.class),
                     new ObjectMapper());
 
             InconsistencyModelSnapshotResponse snapshot = hub.getModelSnapshot(inconsistencyId);

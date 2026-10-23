@@ -9,4 +9,7 @@ public interface AppUserRepo extends BaseRepo<AppUser> {
   Optional<AppUser> findByUsernameIgnoreCase(String username);
 
   List<AppUser> findAllByOrderByUsernameAsc();
+
+  /** Everyone who selected the given metamodel in their settings. */
+  List<AppUser> findDistinctByMetamodels_MetamodelNameOrderByUsernameAsc(String metamodelName);
 }

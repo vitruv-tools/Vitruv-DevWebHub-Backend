@@ -6,8 +6,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import tools.vitruv.framework.remote.modules.users.model.services.KnowledgeMetamodelCatalog;
+import tools.vitruv.framework.remote.modules.users.model.services.MentionService;
 import tools.vitruv.framework.remote.modules.vsums.async.AsyncTaskStatus;
 import tools.vitruv.framework.remote.modules.vsums.async.PropagationTaskRegistry;
 import tools.vitruv.framework.remote.modules.vsums.model.entities.*;
@@ -32,6 +34,8 @@ public class InconsistencyUseCases {
   private final PropagationTaskRegistry taskRegistry;
   private final InconsistencyModelSnapshotEnricher modelSnapshotEnricher;
   private final KnowledgeMetamodelCatalog knowledgeMetamodelCatalog;
+  private final InconsistencyCommentMentionRepo inconsistencyCommentMentionRepo;
+  private final MentionService mentionService;
   private final ObjectMapper objectMapper;
 
   /**
@@ -140,11 +144,23 @@ public class InconsistencyUseCases {
 
   public List<InconsistencyCommentResponse> listComments(UUID inconsistencyId) {
     getEntityOrThrow(inconsistencyId);
-    return inconsistencyCommentRepo.findByInconsistencyIdOrderByCreatedAtAsc(inconsistencyId).stream()
-        .map(this::toCommentResponse)
+    List<InconsistencyComment> comments =
+        inconsistencyCommentRepo.findByInconsistencyIdOrderByCreatedAtAsc(inconsistencyId);
+    if (comments.isEmpty()) {
+      return List.of();
+    }
+    Map<UUID, List<InconsistencyCommentMention>> mentionsByComment = new HashMap<>();
+    for (InconsistencyCommentMention row : inconsistencyCommentMentionRepo
+        .findByCommentIdInOrderByCommentIdAscPositionAsc(
+            comments.stream().map(InconsistencyComment::getId).toList())) {
+      mentionsByComment.computeIfAbsent(row.getCommentId(), id -> new ArrayList<>()).add(row);
+    }
+    return comments.stream()
+        .map(comment -> toCommentResponse(comment, mentionsByComment.getOrDefault(comment.getId(), List.of())))
         .toList();
   }
 
+  @Transactional
   public InconsistencyCommentResponse addComment(UUID inconsistencyId, CreateInconsistencyCommentRequest request) {
     getEntityOrThrow(inconsistencyId);
     if (request == null || request.body() == null || request.body().isBlank()) {
@@ -158,7 +174,21 @@ public class InconsistencyUseCases {
     comment.setAuthor(author);
     comment.setBody(request.body().trim());
     comment.setCreatedAt(Instant.now());
-    return toCommentResponse(inconsistencyCommentRepo.save(comment));
+    InconsistencyComment saved = inconsistencyCommentRepo.save(comment);
+
+    // Tags are parsed here, not in the browser, and stored apart from the text.
+    List<InconsistencyCommentMention> rows = new ArrayList<>();
+    List<MentionService.Mention> mentions = mentionService.parse(saved.getBody());
+    for (int index = 0; index < mentions.size(); index++) {
+      MentionService.Mention mention = mentions.get(index);
+      InconsistencyCommentMention row = new InconsistencyCommentMention();
+      row.setCommentId(saved.getId());
+      row.setKind(mention.kind());
+      row.setTargetName(mention.name());
+      row.setPosition(index);
+      rows.add(row);
+    }
+    return toCommentResponse(saved, inconsistencyCommentMentionRepo.saveAll(rows));
   }
 
   public List<ViewUpdateSummaryResponse> listViewUpdates(UUID inconsistencyId) {
@@ -403,13 +433,24 @@ public class InconsistencyUseCases {
     }
   }
 
-  private InconsistencyCommentResponse toCommentResponse(InconsistencyComment comment) {
+  private InconsistencyCommentResponse toCommentResponse(
+      InconsistencyComment comment,
+      List<InconsistencyCommentMention> mentionRows
+  ) {
+    List<MentionService.Mention> mentions = mentionRows.stream()
+        .map(row -> new MentionService.Mention(row.getKind(), row.getTargetName()))
+        .toList();
+    List<CommentMentionResponse> mentionResponses = mentionService.resolve(mentions).stream()
+        .map(resolved -> new CommentMentionResponse(
+            resolved.kind(), resolved.name(), resolved.label(), resolved.users()))
+        .toList();
     return new InconsistencyCommentResponse(
         comment.getId(),
         comment.getInconsistencyId(),
         comment.getAuthor(),
         comment.getBody(),
-        comment.getCreatedAt()
+        comment.getCreatedAt(),
+        mentionResponses
     );
   }
 
