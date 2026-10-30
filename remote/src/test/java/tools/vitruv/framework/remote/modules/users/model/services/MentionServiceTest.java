@@ -12,6 +12,8 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class MentionServiceTest {
@@ -51,13 +53,47 @@ class MentionServiceTest {
     }
 
     @Test
+    void rejectsPrefixesOfLongerHandles() {
+        assertThat(service.parse("@ada.later")).isEmpty();
+        assertThat(service.parse("@ada-lovelace and @grace+x")).isEmpty();
+    }
+
+    @Test
+    void rejectsEmailAddressesWithPlusOrDotInTheLocalPart() {
+        assertThat(service.parse("ada+@ascet.example")).isEmpty();
+        assertThat(service.parse("first.@grace.example")).isEmpty();
+    }
+
+    @Test
+    void keepsTagsBeforeSentencePunctuation() {
+        assertThat(service.parse("thanks @ada.")).containsExactly(new Mention(MentionKind.USER, "ada"));
+        assertThat(service.parse("@ada, @ascet; @grace!")).containsExactly(
+                new Mention(MentionKind.USER, "ada"),
+                new Mention(MentionKind.METAMODEL, "ascet"),
+                new Mention(MentionKind.USER, "grace"));
+    }
+
+    @Test
     void prefersTheLongestMatchingName() {
         assertThat(service.parse("ping @ada.l now")).containsExactly(new Mention(MentionKind.USER, "ada.l"));
     }
 
+    // New usernames cannot take a metamodel's name. This covers a metamodel added after the user.
     @Test
-    void aUserWinsOverAMetamodelWithTheSameName() {
+    void anExistingUserKeepsTheNameWhenAMetamodelLaterAppearsUnderIt() {
         assertThat(service.parse("@amalthea")).containsExactly(new Mention(MentionKind.USER, "amalthea"));
+    }
+
+    @Test
+    void buildsTheCandidateListOnceUntilInvalidated() {
+        service.parse("@ada");
+        service.parse("@grace");
+        service.resolve(List.of(new Mention(MentionKind.USER, "ada")));
+        verify(appUserRepo, times(1)).findAllByOrderByUsernameAsc();
+
+        service.invalidate();
+        service.parse("@ada");
+        verify(appUserRepo, times(2)).findAllByOrderByUsernameAsc();
     }
 
     @Test
