@@ -15,10 +15,11 @@ spring:
       max-request-size: 100MB
 
   datasource:
-    username: postgres
-    password: password
-    # Separate DB so create-drop tests never wipe the developer/runtime VSUM list.
-    url: jdbc:postgresql://localhost:5432/vitruvius-server-test
+    # In-memory, so tests need no running database (CI included) and create-drop
+    # never touches the developer/runtime VSUM list.
+    username: sa
+    password:
+    url: jdbc:h2:mem:vitruvius-server-test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
   jpa:
     hibernate:
       ddl-auto: create-drop
