@@ -5,13 +5,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import tools.vitruv.framework.remote.common.entities.BaseEntity;
 import tools.vitruv.framework.remote.modules.users.model.services.MentionKind;
-
-import java.util.UUID;
 
 /**
  * One {@code @tag} found in a comment when it was saved: a user or a metamodel.
@@ -30,7 +29,10 @@ public class InconsistencyCommentMention extends BaseEntity {
   @Enumerated(EnumType.STRING)
   private MentionKind kind;
 
-  /** Canonical username for {@link MentionKind#USER}, metamodel name for {@link MentionKind#METAMODEL}. */
+  /**
+   * Canonical username for {@link MentionKind#USER},
+   * metamodel name for {@link MentionKind#METAMODEL}.
+   */
   private String targetName;
 
   /**
