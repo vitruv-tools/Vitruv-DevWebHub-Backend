@@ -1,6 +1,7 @@
 package tools.vitruv.framework.remote.modules.vsums.usecases.dtos;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 public record InconsistencyCommentResponse(
@@ -8,6 +9,7 @@ public record InconsistencyCommentResponse(
     UUID inconsistencyId,
     String author,
     String body,
-    Instant createdAt
+    Instant createdAt,
+    List<CommentMentionResponse> mentions
 ) {
 }

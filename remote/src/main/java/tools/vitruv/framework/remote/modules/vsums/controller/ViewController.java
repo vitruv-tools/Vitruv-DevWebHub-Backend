@@ -32,9 +32,11 @@ public class ViewController {
    *
    * @param body the request body containing the following details:
    *             <ul>
-   *             - vsumId: the unique identifier of the VSUM for which the view is to be opened
-   *             - selectorId: the unique identifier of the selector to be used
-   *             - selectedObjectIds: an array of unique identifiers for selected objects within the view
+   *             <li>vsumId: the unique identifier of the VSUM for which the view is to be
+   *             opened</li>
+   *             <li>selectorId: the unique identifier of the selector to be used</li>
+   *             <li>selectedObjectIds: an array of unique identifiers for selected objects
+   *             within the view</li>
    *             </ul>
    * @return a JSON string containing the view ID and the encoded resource set associated
    * with the opened view

@@ -103,7 +103,7 @@ jobs:
 
     - name: Run SonarQube analysis
       run: >
-        ./mvnw clean verify sonar:sonar -P coverage
+        ./mvnw clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:5.1.0.4751:sonar -P coverage
         --batch-mode
         --update-snapshots
         --no-transfer-progress
