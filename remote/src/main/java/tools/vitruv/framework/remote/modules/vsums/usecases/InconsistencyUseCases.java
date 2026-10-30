@@ -155,8 +155,26 @@ public class InconsistencyUseCases {
             comments.stream().map(InconsistencyComment::getId).toList())) {
       mentionsByComment.computeIfAbsent(row.getCommentId(), id -> new ArrayList<>()).add(row);
     }
+    // Resolve each distinct tag once for the whole thread, then reuse it in every comment.
+    // The map is local to this call, so later changes to knowledge show up on the next listing.
+    Set<MentionService.Mention> distinct = new LinkedHashSet<>();
+    for (List<InconsistencyCommentMention> rows : mentionsByComment.values()) {
+      for (InconsistencyCommentMention row : rows) {
+        distinct.add(toMention(row));
+      }
+    }
+    Map<MentionService.Mention, CommentMentionResponse> resolved = new HashMap<>();
+    for (MentionService.ResolvedMention mention : mentionService.resolve(distinct)) {
+      resolved.put(
+          new MentionService.Mention(mention.kind(), mention.name()),
+          new CommentMentionResponse(mention.kind(), mention.name(), mention.label(), mention.users()));
+    }
     return comments.stream()
-        .map(comment -> toCommentResponse(comment, mentionsByComment.getOrDefault(comment.getId(), List.of())))
+        .map(comment -> toCommentResponse(
+            comment,
+            mentionsByComment.getOrDefault(comment.getId(), List.of()).stream()
+                .map(row -> resolved.get(toMention(row)))
+                .toList()))
         .toList();
   }
 
@@ -169,14 +187,21 @@ public class InconsistencyUseCases {
     String author = request.author() != null && !request.author().isBlank()
         ? request.author().trim()
         : "anonymous";
+    return saveComment(inconsistencyId, author, request.body().trim());
+  }
+
+  /**
+   * Stores a comment and its tags. Every path that writes a comment goes through here, so a tag
+   * in the text is always stored apart from it. Tags are parsed here, not in the browser.
+   */
+  private InconsistencyCommentResponse saveComment(UUID inconsistencyId, String author, String body) {
     InconsistencyComment comment = new InconsistencyComment();
     comment.setInconsistencyId(inconsistencyId);
     comment.setAuthor(author);
-    comment.setBody(request.body().trim());
+    comment.setBody(body);
     comment.setCreatedAt(Instant.now());
     InconsistencyComment saved = inconsistencyCommentRepo.save(comment);
 
-    // Tags are parsed here, not in the browser, and stored apart from the text.
     List<InconsistencyCommentMention> rows = new ArrayList<>();
     List<MentionService.Mention> mentions = mentionService.parse(saved.getBody());
     for (int index = 0; index < mentions.size(); index++) {
@@ -188,7 +213,17 @@ public class InconsistencyUseCases {
       row.setPosition(index);
       rows.add(row);
     }
-    return toCommentResponse(saved, inconsistencyCommentMentionRepo.saveAll(rows));
+    List<InconsistencyCommentMention> savedRows = inconsistencyCommentMentionRepo.saveAll(rows);
+    List<CommentMentionResponse> responses = mentionService
+        .resolve(savedRows.stream().map(InconsistencyUseCases::toMention).toList()).stream()
+        .map(mention -> new CommentMentionResponse(
+            mention.kind(), mention.name(), mention.label(), mention.users()))
+        .toList();
+    return toCommentResponse(saved, responses);
+  }
+
+  private static MentionService.Mention toMention(InconsistencyCommentMention row) {
+    return new MentionService.Mention(row.getKind(), row.getTargetName());
   }
 
   public List<ViewUpdateSummaryResponse> listViewUpdates(UUID inconsistencyId) {
@@ -198,6 +233,7 @@ public class InconsistencyUseCases {
         .toList();
   }
 
+  @Transactional
   public OpenInconsistencyResponse recordResolution(
       UUID inconsistencyId,
       RecordInconsistencyResolutionRequest request
@@ -226,12 +262,7 @@ public class InconsistencyUseCases {
     if (entity.getResolutionComment() != null && !entity.getResolutionComment().isBlank()) {
       body.append('\n').append("Resolution message: ").append(entity.getResolutionComment());
     }
-    InconsistencyComment resolutionComment = new InconsistencyComment();
-    resolutionComment.setInconsistencyId(entity.getId());
-    resolutionComment.setAuthor(entity.getResolvedBy());
-    resolutionComment.setBody(body.toString());
-    resolutionComment.setCreatedAt(Instant.now());
-    inconsistencyCommentRepo.save(resolutionComment);
+    saveComment(entity.getId(), entity.getResolvedBy(), body.toString());
 
     return toResponse(entity);
   }
@@ -435,15 +466,8 @@ public class InconsistencyUseCases {
 
   private InconsistencyCommentResponse toCommentResponse(
       InconsistencyComment comment,
-      List<InconsistencyCommentMention> mentionRows
+      List<CommentMentionResponse> mentionResponses
   ) {
-    List<MentionService.Mention> mentions = mentionRows.stream()
-        .map(row -> new MentionService.Mention(row.getKind(), row.getTargetName()))
-        .toList();
-    List<CommentMentionResponse> mentionResponses = mentionService.resolve(mentions).stream()
-        .map(resolved -> new CommentMentionResponse(
-            resolved.kind(), resolved.name(), resolved.label(), resolved.users()))
-        .toList();
     return new InconsistencyCommentResponse(
         comment.getId(),
         comment.getInconsistencyId(),

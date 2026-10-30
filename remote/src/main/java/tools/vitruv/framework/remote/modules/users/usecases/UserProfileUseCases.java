@@ -19,6 +19,7 @@ import tools.vitruv.framework.remote.modules.users.model.entities.AppUser;
 import tools.vitruv.framework.remote.modules.users.model.entities.AppUserRepo;
 import tools.vitruv.framework.remote.modules.users.model.entities.UserMetamodel;
 import tools.vitruv.framework.remote.modules.users.model.services.KnowledgeMetamodelCatalog;
+import tools.vitruv.framework.remote.modules.users.model.services.MentionService;
 import tools.vitruv.framework.remote.modules.users.usecases.dtos.UpdateMetamodelsRequest;
 import tools.vitruv.framework.remote.modules.users.usecases.dtos.UpsertUserRequest;
 import tools.vitruv.framework.remote.modules.users.usecases.dtos.UserProfileResponse;
@@ -36,6 +37,7 @@ public class UserProfileUseCases {
 
   private final AppUserRepo appUserRepo;
   private final KnowledgeMetamodelCatalog knowledgeMetamodelCatalog;
+  private final MentionService mentionService;
 
   /**
    * Creates a profile on first sign-in and returns a secret token.
@@ -50,6 +52,11 @@ public class UserProfileUseCases {
     Instant now = Instant.now();
     Optional<AppUser> existing = appUserRepo.findByUsernameIgnoreCase(username);
     if (existing.isEmpty()) {
+      // Usernames and metamodel names share one namespace, so "@name" always means one thing.
+      if (knowledgeMetamodelCatalog.canonicalName(username) != null) {
+        throw new ResponseStatusException(
+            HttpStatus.CONFLICT, "Username is reserved by a metamodel: " + username);
+      }
       AppUser user = new AppUser();
       user.setUsername(username);
       user.setCreatedAt(now);
@@ -58,6 +65,7 @@ public class UserProfileUseCases {
     AppUser user = existing.get();
     if (tokenMatches(user, presentedToken)) {
       applySignInFields(user, request, username, now);
+      mentionService.invalidate();
       return toResponse(appUserRepo.save(user), presentedToken);
     }
     if (isSharedDemo(username)) {
@@ -75,6 +83,7 @@ public class UserProfileUseCases {
     String issued = newToken();
     user.setProfileTokenHash(hash(issued));
     applySignInFields(user, request, username, now);
+    mentionService.invalidate();
     return toResponse(appUserRepo.save(user), issued);
   }
 
