@@ -167,7 +167,8 @@ public class InconsistencyUseCases {
     for (MentionService.ResolvedMention mention : mentionService.resolve(distinct)) {
       resolved.put(
           new MentionService.Mention(mention.kind(), mention.name()),
-          new CommentMentionResponse(mention.kind(), mention.name(), mention.label(), mention.users()));
+          new CommentMentionResponse(
+              mention.kind(), mention.name(), mention.label(), mention.users()));
     }
     return comments.stream()
         .map(comment -> toCommentResponse(
@@ -178,6 +179,13 @@ public class InconsistencyUseCases {
         .toList();
   }
 
+  /**
+   * Adds a comment and stores the {@code @tags} found in its text.
+   *
+   * @param inconsistencyId the inconsistency to comment on
+   * @param request the comment text and author
+   * @return the saved comment with its resolved tags
+   */
   @Transactional
   public InconsistencyCommentResponse addComment(UUID inconsistencyId, CreateInconsistencyCommentRequest request) {
     getEntityOrThrow(inconsistencyId);
@@ -194,7 +202,11 @@ public class InconsistencyUseCases {
    * Stores a comment and its tags. Every path that writes a comment goes through here, so a tag
    * in the text is always stored apart from it. Tags are parsed here, not in the browser.
    */
-  private InconsistencyCommentResponse saveComment(UUID inconsistencyId, String author, String body) {
+  private InconsistencyCommentResponse saveComment(
+      UUID inconsistencyId,
+      String author,
+      String body
+  ) {
     InconsistencyComment comment = new InconsistencyComment();
     comment.setInconsistencyId(inconsistencyId);
     comment.setAuthor(author);
@@ -233,6 +245,13 @@ public class InconsistencyUseCases {
         .toList();
   }
 
+  /**
+   * Records how an inconsistency was resolved and adds a comment saying so, with its tags.
+   *
+   * @param inconsistencyId the resolved inconsistency
+   * @param request who resolved it, the chosen option and an optional message
+   * @return the updated inconsistency
+   */
   @Transactional
   public OpenInconsistencyResponse recordResolution(
       UUID inconsistencyId,

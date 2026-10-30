@@ -1,11 +1,5 @@
 package tools.vitruv.framework.remote.modules.users.model.services;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import tools.vitruv.framework.remote.modules.users.model.entities.AppUser;
-import tools.vitruv.framework.remote.modules.users.model.entities.AppUserRepo;
-import tools.vitruv.framework.remote.modules.users.model.services.KnowledgeMetamodelCatalog.KnowledgeMetamodel;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -18,11 +12,16 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import tools.vitruv.framework.remote.modules.users.model.entities.AppUser;
+import tools.vitruv.framework.remote.modules.users.model.entities.AppUserRepo;
+import tools.vitruv.framework.remote.modules.users.model.services.KnowledgeMetamodelCatalog.KnowledgeMetamodel;
 
 /**
  * Finds {@code @tags} in comment text and resolves them to users.
- * <p>
- * A tag is only recognised when it matches a real username or a known metamodel name,
+ *
+ * <p>A tag is only recognised when it matches a real username or a known metamodel name,
  * so {@code @} in an email address or an unknown word is ignored. Matching ignores case.
  * Usernames are unique across users and metamodels, so a tag is never ambiguous. A tag on a
  * metamodel stands for every user who knows that metamodel.
@@ -112,7 +111,8 @@ public class MentionService {
     for (Mention mention : mentions) {
       if (mention.kind() == MentionKind.USER) {
         String label = current.userLabels().getOrDefault(key(mention.name()), mention.name());
-        resolved.add(new ResolvedMention(mention.kind(), mention.name(), label, List.of(mention.name())));
+        resolved.add(new ResolvedMention(
+            mention.kind(), mention.name(), label, List.of(mention.name())));
       } else {
         List<String> users = knowledgeCache.computeIfAbsent(mention.name(), this::usernamesKnowing);
         String label = current.metamodelLabels().getOrDefault(mention.name(), mention.name());
@@ -124,7 +124,8 @@ public class MentionService {
 
   private Index currentIndex() {
     Index snapshot = index;
-    if (snapshot == null || System.nanoTime() - snapshot.builtAtNanos() > METAMODEL_REFRESH_NANOS) {
+    if (snapshot == null
+        || System.nanoTime() - snapshot.builtAtNanos() > METAMODEL_REFRESH_NANOS) {
       snapshot = buildIndex();
       index = snapshot;
     }
@@ -138,13 +139,16 @@ public class MentionService {
       String userKey = key(user.getUsername());
       candidates.putIfAbsent(userKey, new Mention(MentionKind.USER, user.getUsername()));
       String displayName = user.getDisplayName();
-      userLabels.put(userKey, displayName != null && !displayName.isBlank() ? displayName : user.getUsername());
+      boolean hasDisplayName = displayName != null && !displayName.isBlank();
+      userLabels.put(userKey, hasDisplayName ? displayName : user.getUsername());
     }
-    // Usernames cannot take a metamodel's name when they are created. If a metamodel appears later
-    // under an existing username, the user keeps the name, because putIfAbsent never replaces it.
+    // Usernames cannot take a metamodel's name when they are created. If a metamodel
+    // appears later under an existing username, the user keeps the name, because
+    // putIfAbsent never replaces it.
     Map<String, String> metamodelLabels = new HashMap<>();
     for (KnowledgeMetamodel metamodel : knowledgeMetamodelCatalog.listAvailable()) {
-      candidates.putIfAbsent(key(metamodel.name()), new Mention(MentionKind.METAMODEL, metamodel.name()));
+      candidates.putIfAbsent(
+          key(metamodel.name()), new Mention(MentionKind.METAMODEL, metamodel.name()));
       metamodelLabels.put(metamodel.name(), metamodel.label());
     }
 
@@ -152,7 +156,8 @@ public class MentionService {
     if (!candidates.isEmpty()) {
       // Longest names first, so "@ada.lovelace" is not read as "@ada".
       List<String> names = new ArrayList<>(candidates.keySet());
-      names.sort(Comparator.comparingInt(String::length).reversed().thenComparing(Comparator.naturalOrder()));
+      names.sort(Comparator.comparingInt(String::length).reversed()
+          .thenComparing(Comparator.naturalOrder()));
       StringBuilder alternatives = new StringBuilder();
       for (String name : names) {
         if (!alternatives.isEmpty()) {
@@ -170,7 +175,7 @@ public class MentionService {
 
   /** Usernames of everyone who knows the metamodel, sorted by username. */
   public List<String> usernamesKnowing(String metamodelName) {
-    return appUserRepo.findDistinctByMetamodels_MetamodelNameOrderByUsernameAsc(metamodelName).stream()
+    return appUserRepo.findAllKnowingMetamodel(metamodelName).stream()
         .map(AppUser::getUsername)
         .toList();
   }

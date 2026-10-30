@@ -1,8 +1,7 @@
 package tools.vitruv.framework.remote.modules.vsums.usecases.dtos;
 
-import tools.vitruv.framework.remote.modules.users.model.services.MentionKind;
-
 import java.util.List;
+import tools.vitruv.framework.remote.modules.users.model.services.MentionKind;
 
 /**
  * A tag in a comment. {@code name} is what follows the {@code @}. {@code users} lists
