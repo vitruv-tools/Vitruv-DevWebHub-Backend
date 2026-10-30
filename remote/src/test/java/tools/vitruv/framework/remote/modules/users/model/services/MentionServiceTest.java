@@ -104,7 +104,7 @@ class MentionServiceTest {
 
     @Test
     void resolvesLabelsAndExpandsMetamodelsToUsers() {
-        when(appUserRepo.findDistinctByMetamodels_MetamodelNameOrderByUsernameAsc("ascet"))
+        when(appUserRepo.findAllKnowingMetamodel("ascet"))
                 .thenReturn(List.of(user("ada", "Ada Lovelace"), user("grace", null)));
 
         List<ResolvedMention> resolved = service.resolve(List.of(
