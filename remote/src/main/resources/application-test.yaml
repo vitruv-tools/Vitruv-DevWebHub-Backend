@@ -29,7 +29,7 @@ spring:
 
 logging:
   file:
-    name: ./remote/src/test/resources/logs/vitruvius-server.log
+    name: ./src/test/resources/logs/vitruvius-server.log
   logback:
     rollingpolicy:
       max-file-size: 10MB
@@ -39,7 +39,7 @@ logging:
 
 app:
   vsums:
-    vsum-providers-dir: ./remote/src/test/resources/vsum-providers
+    vsum-providers-dir: ./src/test/resources/vsum-providers
     vsum-provider-jar: vsum-provider.jar
     vsum-provider-lib-dir-name: lib
-    vsum-storage-dir: ./remote/src/test/resources/vsum-storage
+    vsum-storage-dir: ./src/test/resources/vsum-storage

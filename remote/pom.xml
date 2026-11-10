@@ -8,7 +8,7 @@
   <parent>
     <groupId>tools.vitruv</groupId>
     <artifactId>tools.vitruv.devWebHub.backend</artifactId>
-    <version>4.0.1-SNAPSHOT</version>
+    <version>4.0.2-SNAPSHOT</version>
   </parent>
 
   <artifactId>tools.vitruv.devWebHub.backend.remote</artifactId>
@@ -185,7 +185,7 @@
       <dependency>
           <groupId>${project.groupId}</groupId>
           <artifactId>tools.vitruv.server.p2wrappers.emfutils</artifactId>
-          <version>${project.version}</version>
+          <version>4.0.1-SNAPSHOT</version>
       </dependency>
     </dependencies>
 

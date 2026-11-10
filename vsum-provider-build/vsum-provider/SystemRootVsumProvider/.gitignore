@@ -1,0 +1,13 @@
+# VS Code
+.vscode/
+
+# Maven
+target/
+*.log
+.mvn/wrapper/*.jar
+
+# Eclipse (keep src/main/resources/META-INF/services for VsumProvider SPI)
+META-INF
+!vsum/src/main/resources/META-INF/**
+build.properties
+plugin.properties

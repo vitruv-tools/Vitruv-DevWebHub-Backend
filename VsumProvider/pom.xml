@@ -11,7 +11,7 @@
     <properties>
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <vitruv.version>4.0.1-SNAPSHOT</vitruv.version>
+        <vitruv.version>4.0.2-SNAPSHOT</vitruv.version>
     </properties>
 
     <dependencies>

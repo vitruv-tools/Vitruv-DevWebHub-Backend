@@ -1,0 +1,153 @@
+
+// Epic 1 (model2 → model): user interactions when mirroring Root changes into System.
+// Point 1: Entity → component type (single-choice).
+// Point 2: Link → supported protocols (multi-select existing or create new via text input).
+
+import "http://vitruv.tools/methodologisttemplate/model" as m1
+import "http://vitruv.tools/methodologisttemplate/model2" as m2
+
+reactions: model2ToModel
+in reaction to changes in m2
+execute actions in m1
+
+reaction EntityInsertedIntoRoot {
+	after element m2::Entity inserted in m2::Root[entities]
+	call createAndInsertComponent(affectedEObject, newValue)
+}
+
+reaction EntityReplacedInRoot {
+	after element m2::Entity replaced at m2::Root[entities]
+	call createAndInsertComponent(affectedEObject, newValue)
+}
+
+reaction LinkInsertedIntoRoot {
+	after element m2::Link inserted in m2::Root[links]
+	call createAndInsertSystemLink(affectedEObject, newValue)
+}
+
+reaction LinkReplacedInRoot {
+	after element m2::Link replaced at m2::Root[links]
+	call createAndInsertSystemLink(affectedEObject, newValue)
+}
+
+reaction EntityInsertedIntoModel2Link {
+	after element m2::Entity inserted in m2::Link[entities]
+	call addComponentToSystemLink(affectedEObject, newValue)
+}
+
+routine createAndInsertComponent(m2::Root mRoot, m2::Entity entity) {
+	match {
+		require absence of m1::Component corresponding to entity
+		val system = retrieve m1::System corresponding to mRoot
+	}
+	update {
+	    val entityName = entity.name ?: "<unnamed>"
+		val typeIndex = userInteractor.getSingleSelectionDialogBuilder()
+			.message("Select the component type to create in the System model for entity '"
+				+ entityName + "':")
+			.choices(#[ "Plain Component", "Server", "Device" ])
+			.title("Component type")
+			.positiveButtonText("OK")
+			.negativeButtonText("Cancel")
+			.startInteraction()
+		// Correspondence before containment so model→model2 reverse reactions skip (no duplicate Entity).
+		if (typeIndex == 0) {
+			val component = tools.vitruv.methodologisttemplate.model.model.ModelFactory.eINSTANCE.createComponent()
+			component.name = entity.name
+			addCorrespondenceBetween(component, entity)
+			system.components.add(component)
+		} else if (typeIndex == 1) {
+			val server = tools.vitruv.methodologisttemplate.model.model.ModelFactory.eINSTANCE.createServer()
+			server.name = entity.name
+			addCorrespondenceBetween(server, entity)
+			system.components.add(server)
+		} else if (typeIndex == 2) {
+			val device = tools.vitruv.methodologisttemplate.model.model.ModelFactory.eINSTANCE.createDevice()
+			device.name = entity.name
+			addCorrespondenceBetween(device, entity)
+			system.components.add(device)
+		}
+	}
+}
+
+routine createAndInsertSystemLink(m2::Root mRoot, m2::Link mLink) {
+	match {
+		require absence of m1::Link corresponding to mLink
+		val system = retrieve m1::System corresponding to mRoot
+	}
+	create {
+		val link = new m1::Link
+	}
+	update {
+		// Correspondence before containment so LinkInsertedIntoSystem does not create a second Root Link / ask for speed.
+		addCorrespondenceBetween(link, mLink)
+		system.links.add(link)
+		assignProtocolsToSystemLink(system, link)
+	}
+}
+
+routine assignProtocolsToSystemLink(m1::System system, m1::Link link) {
+	update {
+		if (system.protocols.empty) {
+			val protocolName = userInteractor.getTextInputDialogBuilder()
+				.message("No protocols exist yet. Enter a name for the new protocol supported by this link:")
+				.title("New protocol")
+				.positiveButtonText("OK")
+				.negativeButtonText("Cancel")
+				.inputValidator(tools.vitruv.methodologisttemplate.consistency.SystemRootInputValidators.NON_EMPTY_PROTOCOL_NAME)
+				.startInteraction()
+			val protocol = tools.vitruv.methodologisttemplate.model.model.ModelFactory.eINSTANCE.createProtocol()
+			protocol.name = protocolName.trim()
+			system.protocols.add(protocol)
+			link.supportedProtocols.add(protocol)
+			link.protocol = protocol
+		} else {
+			val modeIndex = userInteractor.getSingleSelectionDialogBuilder()
+				.message("How should protocols be assigned to the new System link?")
+				.choices(#[ "Select existing protocols", "Create a new protocol" ])
+				.title("Link protocols")
+				.positiveButtonText("OK")
+				.negativeButtonText("Cancel")
+				.startInteraction()
+			if (modeIndex == 0) {
+				val protocolChoices = newArrayList
+				for (protocol : system.protocols) {
+					protocolChoices.add(protocol.name)
+				}
+				val selectedIndices = userInteractor.getMultiSelectionDialogBuilder()
+					.message("Select one or more existing protocols supported by this link:")
+					.choices(protocolChoices)
+					.title("Supported protocols")
+					.positiveButtonText("OK")
+					.negativeButtonText("Cancel")
+					.startInteraction()
+				for (index : selectedIndices) {
+					link.supportedProtocols.add(system.protocols.get(index))
+				}
+			} else {
+				val protocolName = userInteractor.getTextInputDialogBuilder()
+					.message("Enter a name for the new protocol supported by this link:")
+					.title("New protocol")
+					.positiveButtonText("OK")
+					.negativeButtonText("Cancel")
+					.inputValidator(tools.vitruv.methodologisttemplate.consistency.SystemRootInputValidators.NON_EMPTY_PROTOCOL_NAME)
+					.startInteraction()
+				val protocol = tools.vitruv.methodologisttemplate.model.model.ModelFactory.eINSTANCE.createProtocol()
+				protocol.name = protocolName.trim()
+				system.protocols.add(protocol)
+				link.supportedProtocols.add(protocol)
+			}
+			link.protocol = link.supportedProtocols.get(0)
+		}
+	}
+}
+
+routine addComponentToSystemLink(m2::Link mLink, m2::Entity entity) {
+	match {
+		val link = retrieve m1::Link corresponding to mLink
+		val component = retrieve m1::Component corresponding to entity
+	}
+	update {
+		link.components.add(component)
+	}
+}

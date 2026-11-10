@@ -82,7 +82,7 @@ mvn test
 
 **Create a new VsumProvider from an existing one as a Template:**
 
-- [ ] Ensure you have the dependency `de.niklaskerkhoff.vsumprovider:VsumProvider:1.1-SNAPSHOT` installed locally via `mvn install`. It is available in my GitLab repository in `niklaskerkhoff/VsumProvider`.
+- [ ] Ensure you have the dependency `vitruv.tools.framework.remote.vsumprovider` installed locally via `mvn install`.
 - [ ] Create a new Vsum-Vitruv-Server instance using the Vitruv-CLI
 - [ ] Create a new module `dist`
 - [ ] Copy the root pom `/pom.xml` to the new project
@@ -93,7 +93,7 @@ mvn test
 - [ ] Replace the main class in `/vsum/src/main/java` with the VsumProvider class
 - [ ]  Adjust the package name, class name and imports of the VsumProviderClass
 - [ ] Adjust the code marked with the comment `!!!CHANGE!!!` in the VsumProviderClass
-- [ ] Copy the file `/vsum/src/main/resources/META-INF/services/de.niklaskerkhoff.vsumprovider.VsumProvider` to the new project and adjust the content according to the package and classname of the VsumProvider class
+- [ ] Copy the file `/vsum/src/main/resources/META-INF/services/vitruv.tools.framework.remote.vsumprovider.VsumProvider` to the new project and adjust the content according to the package and classname of the VsumProvider class
 - [ ] Run `mvn clean package`
 - [ ] The new VsumProvider is located in `/dist/target`
 

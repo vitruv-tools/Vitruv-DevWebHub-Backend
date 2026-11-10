@@ -43,6 +43,9 @@ vsum-storage
 logs
 services/**/data
 
+## include jars for Tests
+!remote/src/test/resources/vsum-providers/**/*.jar
+
 ### STS ###
 .apt_generated
 .classpath
