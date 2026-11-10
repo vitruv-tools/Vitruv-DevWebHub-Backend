@@ -8,7 +8,7 @@
   <parent>
     <groupId>tools.vitruv</groupId>
     <artifactId>tools.vitruv.devWebHub.backend</artifactId>
-    <version>4.0.1-SNAPSHOT</version>
+    <version>4.0.2-SNAPSHOT</version>
   </parent>
 
   <artifactId>tools.vitruv.devWebHub.backend.p2wrappers</artifactId>
@@ -16,6 +16,7 @@
 
   <name>p2 Dependency Wrappers</name>
   <description>p2 Dependency Wrappers for this project</description>
+    <version>4.0.1-SNAPSHOT</version>
 
   <modules>
     <module>emfutils</module>

@@ -8,6 +8,8 @@ import edu.kit.ipd.sdq.commons.util.org.eclipse.emf.ecore.resource.ResourceSetUt
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Optional;
+
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -117,6 +119,16 @@ public class ChangeDerivingRemoteView implements CommittableView {
     return base.withChangeDerivingTrait(changeResolutionStrategy);
   }
 
+  @Override
+  public <T> Optional<T> getAnnotation(Class<T> aClass) {
+    return base.withChangeDerivingTrait().getAnnotation(aClass);
+  }
+
+  @Override
+  public <T> void setAnnotation(Class<T> aClass, T t) {
+    base.withChangeDerivingTrait().setAnnotation(aClass, t);
+  }
+
   /**
    * Commits the changes made to the view and its containing elements.
    *
@@ -140,6 +152,11 @@ public class ChangeDerivingRemoteView implements CommittableView {
     base.remoteConnection.propagateChanges(
         base.uuid, VitruviusChangeFactory.getInstance().createCompositeChange(allChanges));
     base.modified = false;
+  }
+
+  @Override
+  public Map<Class<?>, Object> getAnnotations() {
+    return base.withChangeDerivingTrait().getAnnotations();
   }
 
   private VitruviusChange<HierarchicalId> findChanges(Resource oldState, Resource newState) {

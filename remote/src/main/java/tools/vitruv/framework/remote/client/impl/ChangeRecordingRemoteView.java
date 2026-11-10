@@ -4,6 +4,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Collection;
+import java.util.Map;
+import java.util.Optional;
+
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import tools.vitruv.change.composite.description.TransactionalChange;
@@ -129,6 +132,21 @@ public class ChangeRecordingRemoteView implements CommittableView {
     base.remoteConnection.propagateChanges(base.uuid, unresolvedChanges);
     base.modified = false;
     changeRecorder.beginRecording();
+  }
+
+  @Override
+  public Map<Class<?>, Object> getAnnotations() {
+    return base.withChangeRecordingTrait().getAnnotations();
+  }
+
+  @Override
+  public <T> Optional<T> getAnnotation(Class<T> aClass) {
+    return base.withChangeRecordingTrait().getAnnotation(aClass);
+  }
+
+  @Override
+  public <T> void setAnnotation(Class<T> aClass, T t) {
+    base.withChangeRecordingTrait().setAnnotation(aClass, t);
   }
 
   /**
