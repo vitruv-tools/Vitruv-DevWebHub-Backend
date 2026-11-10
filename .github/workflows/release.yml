@@ -91,11 +91,11 @@ jobs:
         if: github.event_name == 'release'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload "${{ github.event.release.tag_name }}" target/VitruviusServer-*.jar --clobber
+        run: gh release upload "${{ github.event.release.tag_name }}" remote/target/tools.vitruv.devWebHub.backend.remote-*.jar --clobber
 
       - name: Upload JAR as artifact (manual runs)
         if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v7
         with:
           name: VitruviusServer-release
-          path: target/VitruviusServer-*.jar
+          path: remote/target/tools.vitruv.devWebHub.backend.remote-*.jar
