@@ -164,11 +164,20 @@ jobs:
           ./mvnw -f VsumProvider/pom.xml install
           -DskipTests --batch-mode --no-transfer-progress
 
-      - name: Run SonarQube analysis
+      - name: Build and test with coverage
         run: >
-          ./mvnw clean verify sonar:sonar -P coverage
+          ./mvnw clean verify -P coverage
           --batch-mode
           --update-snapshots
+          --no-transfer-progress
+
+      # Analyze only the remote module. The first project of the reactor must inherit the
+      # Vitruv parent POM, because Maven resolves the `sonar` plugin prefix from it;
+      # VsumProvider has no parent and would break the prefix resolution.
+      - name: Run SonarQube analysis
+        run: >
+          ./mvnw sonar:sonar -pl remote
+          --batch-mode
           --no-transfer-progress
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
