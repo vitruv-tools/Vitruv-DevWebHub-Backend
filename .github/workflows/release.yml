@@ -47,7 +47,7 @@ jobs:
 
       - name: Install VsumProvider
         run: >
-          ./mvnw -f VsumProvider/pom.xml install
+          ./mvnw install -pl VsumProvider -am
           -DskipTests --batch-mode --no-transfer-progress
 
       - name: Verify build
@@ -76,7 +76,7 @@ jobs:
 
       - name: Install VsumProvider
         run: >
-          ./mvnw -f VsumProvider/pom.xml install
+          ./mvnw install -pl VsumProvider -am
           -DskipTests --batch-mode --no-transfer-progress
 
       - name: Build executable JAR
