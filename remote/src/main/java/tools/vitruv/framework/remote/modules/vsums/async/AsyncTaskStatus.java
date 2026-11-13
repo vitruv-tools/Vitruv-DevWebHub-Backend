@@ -117,9 +117,15 @@ public class AsyncTaskStatus {
     }
   }
 
+  /**
+   * Hands the answer to the waiting worker. The state switches to {@link AsyncTaskState#RUNNING}
+   * immediately, so pollers never see the already-answered prompt as still pending (e.g. without a
+   * validation error that the worker sets before re-prompting).
+   */
   public void setInteractionResponse(UserInteractionBase response) {
     synchronized (interactionLock) {
       this.interactionResponse = response;
+      this.state = AsyncTaskState.RUNNING;
       interactionLock.notifyAll();
     }
   }

@@ -8,12 +8,12 @@
   <parent>
     <groupId>tools.vitruv</groupId>
     <artifactId>parent</artifactId>
-    <version>4.0.0</version>
+    <version>4.0.2</version>
   </parent>
 
   <!-- Project Information -->
   <artifactId>tools.vitruv.devWebHub.backend</artifactId>
-  <version>4.0.1-SNAPSHOT</version>
+  <version>4.0.2-SNAPSHOT</version>
   <packaging>pom</packaging>
 
     <name>Vitruv Server for developer web access</name>
@@ -42,12 +42,12 @@
   </modules>
 
   <properties>
-    <vitruv.version>4.0.1-SNAPSHOT</vitruv.version>
+    <vitruv.version>4.0.2-SNAPSHOT</vitruv.version>
     <spring-boot.version>4.0.8</spring-boot.version>
     <maven.compiler.parameters>true</maven.compiler.parameters>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar.organization>vitruv-tools</sonar.organization>
-    <sonar.projectKey>vitruv-tools_Vitruv-Server</sonar.projectKey>
+    <sonar.projectKey>vitruv-tools_Vitruv-DevWebHub-Backend</sonar.projectKey>
   </properties>
 
   <!-- Dependency Management -->

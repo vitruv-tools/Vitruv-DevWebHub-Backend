@@ -4,15 +4,15 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <groupId>tools.vitruv</groupId>
+        <artifactId>tools.vitruv.devWebHub.backend</artifactId>
+        <version>4.0.2-SNAPSHOT</version>
+    </parent>
+
     <groupId>vitruv.tools.framework.remote.vsumprovider</groupId>
     <artifactId>VsumProvider</artifactId>
     <version>1.1-SNAPSHOT</version>
-
-    <properties>
-        <maven.compiler.release>21</maven.compiler.release>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <vitruv.version>4.0.1-SNAPSHOT</vitruv.version>
-    </properties>
 
     <dependencies>
         <dependency>

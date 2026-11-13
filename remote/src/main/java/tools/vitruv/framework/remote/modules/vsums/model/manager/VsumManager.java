@@ -159,10 +159,19 @@ public class VsumManager {
     }
   }
 
+  /**
+   * Absolute, normalized storage root. A relative root such as {@code ./vsum-storage} would otherwise
+   * reach Vitruv as {@code /cwd/./vsum-storage/...} for some resources and {@code /cwd/vsum-storage/...}
+   * for others. Vitruv then treats one file as two resources and can delete it while saving the other.
+   */
+  private Path storageRoot() {
+    return Path.of(vsumProperties.vsumStorageDir()).toAbsolutePath().normalize();
+  }
+
   private Path getVsumStoragePath(VsumInfo info) {
     try {
       return VsumStoragePathResolver.resolveReplacingCorrupt(
-          Path.of(vsumProperties.vsumStorageDir()),
+          storageRoot(),
           info.getMetaModelName(),
           info.getId());
     } catch (IOException e) {
@@ -173,7 +182,7 @@ public class VsumManager {
   private Path quarantineAndFreshPath(VsumInfo info, Path storagePath) {
     try {
       VsumStoragePathResolver.quarantine(storagePath);
-      return Path.of(vsumProperties.vsumStorageDir())
+      return storageRoot()
           .resolve(VsumStoragePathResolver.directoryPrefix(info.getMetaModelName(), info.getId()));
     } catch (IOException e) {
       throw new UncheckedIOException("Failed to quarantine corrupt VSUM storage for " + info.getId(), e);

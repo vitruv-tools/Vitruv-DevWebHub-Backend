@@ -11,6 +11,8 @@ import tools.vitruv.framework.views.*;
 import tools.vitruv.framework.views.changederivation.StateBasedChangeResolutionStrategy;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
@@ -29,6 +31,12 @@ public class RemoteView implements View {
 
   protected ResourceSet viewSource;
   protected boolean modified = false;
+
+  /**
+   * Annotations of the committable views created from this view. Shared by all of them, so
+   * annotations survive switching between the change recording and change deriving trait.
+   */
+  final Map<Class<?>, Object> annotations = new HashMap<>();
 
   /**
    * Creates a new {@link RemoteView}.

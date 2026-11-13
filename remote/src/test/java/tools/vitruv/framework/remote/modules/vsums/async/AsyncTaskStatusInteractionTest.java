@@ -15,6 +15,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 class AsyncTaskStatusInteractionTest {
 
     @Test
+    void setInteractionResponseLeavesWaitingStateBeforeWorkerWakesUp() throws Exception {
+        AsyncTaskStatus status = new AsyncTaskStatus(UUID.randomUUID(), UUID.randomUUID());
+
+        ConfirmationUserInteraction pending = InteractionFactory.eINSTANCE.createConfirmationUserInteraction();
+        pending.setMessage("Proceed?");
+        status.setWaitingForInteraction(pending);
+
+        ConfirmationUserInteraction response = InteractionFactory.eINSTANCE.createConfirmationUserInteraction();
+        response.setConfirmed(true);
+        status.setInteractionResponse(response);
+
+        // No worker has consumed the answer yet; pollers must not see the answered prompt as pending.
+        assertThat(status.getState()).isEqualTo(AsyncTaskState.RUNNING);
+        assertThat(status.isWaitingForUserInteraction()).isFalse();
+
+        ConfirmationUserInteraction consumed = status.waitForInteractionResponse();
+        assertThat(consumed.isConfirmed()).isTrue();
+        assertThat(status.getPendingInteraction()).isNull();
+    }
+
+    @Test
     void waitForInteractionResponseUnblocksAfterSetInteractionResponse() throws Exception {
         AsyncTaskStatus status = new AsyncTaskStatus(UUID.randomUUID(), UUID.randomUUID());
 

@@ -6,8 +6,11 @@ import static com.google.common.base.Preconditions.checkState;
 import edu.kit.ipd.sdq.commons.util.org.eclipse.emf.ecore.resource.ResourceCopier;
 import edu.kit.ipd.sdq.commons.util.org.eclipse.emf.ecore.resource.ResourceSetUtil;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Optional;
+
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -117,6 +120,16 @@ public class ChangeDerivingRemoteView implements CommittableView {
     return base.withChangeDerivingTrait(changeResolutionStrategy);
   }
 
+  @Override
+  public <T> Optional<T> getAnnotation(Class<T> type) {
+    return Optional.ofNullable(type.cast(base.annotations.get(type)));
+  }
+
+  @Override
+  public <T> void setAnnotation(Class<T> type, T value) {
+    base.annotations.put(type, value);
+  }
+
   /**
    * Commits the changes made to the view and its containing elements.
    *
@@ -140,6 +153,11 @@ public class ChangeDerivingRemoteView implements CommittableView {
     base.remoteConnection.propagateChanges(
         base.uuid, VitruviusChangeFactory.getInstance().createCompositeChange(allChanges));
     base.modified = false;
+  }
+
+  @Override
+  public Map<Class<?>, Object> getAnnotations() {
+    return Collections.unmodifiableMap(base.annotations);
   }
 
   private VitruviusChange<HierarchicalId> findChanges(Resource oldState, Resource newState) {

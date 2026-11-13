@@ -8,10 +8,14 @@
         upperBound="-1" eType="#//Protocol"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Link">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="speedMBitsPerSecond" lowerBound="1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="components" lowerBound="2"
         upperBound="-1" eType="#//Component"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="protocol" lowerBound="1"
         eType="#//Protocol"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="supportedProtocols" lowerBound="1"
+        upperBound="-1" eType="#//Protocol"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Protocol">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
