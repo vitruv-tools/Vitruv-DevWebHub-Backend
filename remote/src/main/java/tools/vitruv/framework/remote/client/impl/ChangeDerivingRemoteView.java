@@ -6,6 +6,7 @@ import static com.google.common.base.Preconditions.checkState;
 import edu.kit.ipd.sdq.commons.util.org.eclipse.emf.ecore.resource.ResourceCopier;
 import edu.kit.ipd.sdq.commons.util.org.eclipse.emf.ecore.resource.ResourceSetUtil;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Optional;
@@ -120,13 +121,13 @@ public class ChangeDerivingRemoteView implements CommittableView {
   }
 
   @Override
-  public <T> Optional<T> getAnnotation(Class<T> aClass) {
-    return base.withChangeDerivingTrait().getAnnotation(aClass);
+  public <T> Optional<T> getAnnotation(Class<T> type) {
+    return Optional.ofNullable(type.cast(base.annotations.get(type)));
   }
 
   @Override
-  public <T> void setAnnotation(Class<T> aClass, T t) {
-    base.withChangeDerivingTrait().setAnnotation(aClass, t);
+  public <T> void setAnnotation(Class<T> type, T value) {
+    base.annotations.put(type, value);
   }
 
   /**
@@ -156,7 +157,7 @@ public class ChangeDerivingRemoteView implements CommittableView {
 
   @Override
   public Map<Class<?>, Object> getAnnotations() {
-    return base.withChangeDerivingTrait().getAnnotations();
+    return Collections.unmodifiableMap(base.annotations);
   }
 
   private VitruviusChange<HierarchicalId> findChanges(Resource oldState, Resource newState) {

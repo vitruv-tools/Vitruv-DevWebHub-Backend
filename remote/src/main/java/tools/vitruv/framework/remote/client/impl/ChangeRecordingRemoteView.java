@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
@@ -106,7 +107,7 @@ public class ChangeRecordingRemoteView implements CommittableView {
   @Override
   public CommittableView withChangeRecordingTrait() {
     changeRecorder.close();
-    return base.withChangeDerivingTrait();
+    return base.withChangeRecordingTrait();
   }
 
   @Override
@@ -136,17 +137,17 @@ public class ChangeRecordingRemoteView implements CommittableView {
 
   @Override
   public Map<Class<?>, Object> getAnnotations() {
-    return base.withChangeRecordingTrait().getAnnotations();
+    return Collections.unmodifiableMap(base.annotations);
   }
 
   @Override
-  public <T> Optional<T> getAnnotation(Class<T> aClass) {
-    return base.withChangeRecordingTrait().getAnnotation(aClass);
+  public <T> Optional<T> getAnnotation(Class<T> type) {
+    return Optional.ofNullable(type.cast(base.annotations.get(type)));
   }
 
   @Override
-  public <T> void setAnnotation(Class<T> aClass, T t) {
-    base.withChangeRecordingTrait().setAnnotation(aClass, t);
+  public <T> void setAnnotation(Class<T> type, T value) {
+    base.annotations.put(type, value);
   }
 
   /**
