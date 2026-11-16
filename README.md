@@ -82,7 +82,7 @@ mvn test
 
 **Create a new VsumProvider from an existing one as a Template:**
 
-- [ ] Ensure you have the dependency `vitruv.tools.framework.remote.vsumprovider` installed locally via `mvn install`.
+- [ ] Ensure you have the dependency `tools.vitruv:tools.vitruv.devWebHub.backend.vsumprovider` installed locally via `mvn install`.
 - [ ] Create a new Vsum-Vitruv-Server instance using the Vitruv-CLI
 - [ ] Create a new module `dist`
 - [ ] Copy the root pom `/pom.xml` to the new project

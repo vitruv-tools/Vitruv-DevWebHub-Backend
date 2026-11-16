@@ -16,8 +16,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>vitruv.tools.framework.remote.vsumprovider</groupId>
-            <artifactId>VsumProvider</artifactId>
+            <groupId>tools.vitruv</groupId>
+            <artifactId>tools.vitruv.devWebHub.backend.vsumprovider</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
