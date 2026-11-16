@@ -18,6 +18,8 @@ updates:
       # Everything else that is not a major bump lands in one PR per run.
       # Major bumps still arrive as separate PRs for individual review.
       maven-minor-patch:
+        patterns:
+          - "*"
         update-types:
           - "minor"
           - "patch"
