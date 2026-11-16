@@ -3,18 +3,32 @@ updates:
   - package-ecosystem: maven
     directory: "/"
     schedule:
-      interval: daily
+      interval: weekly
     commit-message:
       prefix: "Maven"
       include: "scope"
     groups:
+      # Jackson modules must stay in lockstep, so they always move together.
+      jackson:
+        patterns:
+          - "com.fasterxml.jackson*"
       junit:
         patterns:
           - "org.junit.*"
+      # Everything else that is not a major bump lands in one PR per run.
+      # Major bumps still arrive as separate PRs for individual review.
+      maven-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: weekly
     commit-message:
       prefix: "GitHub Actions"
       include: "scope"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
