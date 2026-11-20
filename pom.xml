@@ -42,7 +42,7 @@
   </modules>
 
   <properties>
-    <vitruv.version>4.0.2-SNAPSHOT</vitruv.version>
+    <vitruv.version>4.0.2</vitruv.version>
     <spring-boot.version>4.1.2</spring-boot.version>
     <maven.compiler.parameters>true</maven.compiler.parameters>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
