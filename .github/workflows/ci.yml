@@ -53,7 +53,7 @@ jobs:
         uses: actions/checkout@v7.0.1
 
       - name: Setup Java and Maven cache
-        uses: actions/setup-java@v6.2.0
+        uses: actions/setup-java@v6.3.0
         with:
           distribution: 'temurin'
           java-version: ${{ env.JAVA_VERSION }}
@@ -100,7 +100,7 @@ jobs:
         uses: actions/checkout@v7.0.1
 
       - name: Setup Java and Maven cache
-        uses: actions/setup-java@v6.2.0
+        uses: actions/setup-java@v6.3.0
         with:
           distribution: 'temurin'
           java-version: ${{ env.JAVA_VERSION }}
@@ -153,7 +153,7 @@ jobs:
           fetch-depth: 0   # Sonar needs full history for blame/new code detection
 
       - name: Setup Java and Maven cache
-        uses: actions/setup-java@v6.2.0
+        uses: actions/setup-java@v6.3.0
         with:
           distribution: 'temurin'
           java-version: ${{ env.JAVA_VERSION }}
@@ -189,7 +189,7 @@ jobs:
         uses: actions/checkout@v7.0.1
 
       - name: Run checkstyle
-        uses: dbelyaev/action-checkstyle@0265ee4bad18835a7d35bcf1e869705f3734b100 # v4.6.0
+        uses: dbelyaev/action-checkstyle@80d6f05fe79a0f9a4bd8f678333aed0cccb5f9e6 # v4.7.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
@@ -207,7 +207,7 @@ jobs:
         uses: actions/checkout@v7.0.1
 
       - name: Setup Java and Maven cache
-        uses: actions/setup-java@v6.2.0
+        uses: actions/setup-java@v6.3.0
         with:
           distribution: 'temurin'
           java-version: ${{ env.JAVA_VERSION }}
