@@ -27,11 +27,13 @@ import org.springframework.web.server.ResponseStatusException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+  /** Returns a response with the exception's status code and its reason as body. */
   @ExceptionHandler(ResponseStatusException.class)
   public ResponseEntity<Object> handleResponseStatusException(ResponseStatusException ex) {
     return ResponseEntity.status(ex.getStatusCode()).body(ex.getReason());
   }
 
+  /** Returns a {@code BAD_REQUEST} response with the exception's message as body. */
   @ExceptionHandler(Exception.class)
   public ResponseEntity<Object> handleGenericException(Exception exception) {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());

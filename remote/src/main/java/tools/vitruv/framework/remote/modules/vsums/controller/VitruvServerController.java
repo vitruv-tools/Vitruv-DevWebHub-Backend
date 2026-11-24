@@ -16,6 +16,11 @@ import tools.vitruv.framework.remote.modules.vsums.usecasesimpls.VitruvServerStr
 public class VitruvServerController {
   private final VitruvServerStrategyImpl vitruvServerStrategy;
 
+  /**
+   * Availability information about the Vitruv server.
+   *
+   * @param isAvailable whether the Vitruv server is available
+   */
   public record VitruvServerInfo(boolean isAvailable) {}
 
   /**

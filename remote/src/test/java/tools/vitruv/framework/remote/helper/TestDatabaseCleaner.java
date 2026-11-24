@@ -10,6 +10,7 @@ import tools.vitruv.framework.remote.modules.vsums.model.entities.OpenInconsiste
 import tools.vitruv.framework.remote.modules.vsums.model.entities.ViewUpdateRepo;
 import tools.vitruv.framework.remote.modules.vsums.model.entities.VsumInfoRepo;
 
+/** Deletes all rows from the application's repositories between tests. */
 @Component
 @RequiredArgsConstructor
 public class TestDatabaseCleaner {
@@ -22,6 +23,7 @@ public class TestDatabaseCleaner {
   private final UserMetamodelRepo userMetamodelRepo;
   private final AppUserRepo appUserRepo;
 
+  /** Deletes all entities, removing dependent rows first. */
   public void cleanAll() {
     inconsistencyCommentMentionRepo.deleteAll();
     inconsistencyCommentRepo.deleteAll();

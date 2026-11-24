@@ -12,6 +12,10 @@ import tools.vitruv.framework.remote.modules.vsums.model.services.ViewService;
 import tools.vitruv.framework.remote.modules.vsums.model.wrapper.ViewWrapper;
 import tools.vitruv.framework.remote.modules.vsums.usecases.InconsistencyUseCases;
 
+/**
+ * Starts change propagation for views asynchronously on the propagation executor and tracks
+ * it in the {@link PropagationTaskRegistry}.
+ */
 @Service
 public class AsyncPropagationService {
 
@@ -22,6 +26,7 @@ public class AsyncPropagationService {
   private final VsumManager vsumManager;
   private final Executor propagationExecutor;
 
+  /** Creates the service with its collaborators and the executor that runs propagation tasks. */
   public AsyncPropagationService(
       PropagationTaskRegistry taskRegistry,
       ViewManager viewManager,
@@ -37,6 +42,12 @@ public class AsyncPropagationService {
     this.propagationExecutor = propagationExecutor;
   }
 
+  /**
+   * Starts async propagation of the given view without committing a new resource set first.
+   *
+   * @param viewId the ID of the open view to update
+   * @return the ID of the registered propagation task
+   */
   public UUID startUpdate(UUID viewId) {
     return startUpdate(viewId, null);
   }

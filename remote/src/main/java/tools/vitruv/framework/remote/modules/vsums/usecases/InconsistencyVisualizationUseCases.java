@@ -46,6 +46,14 @@ public class InconsistencyVisualizationUseCases {
   private final VsumManager vsumManager;
   private final ViewService viewService;
 
+  /**
+   * Returns the model elements and correspondences of the inconsistency's VSUM.
+   *
+   * <p>While the inconsistency is OPEN, or if the VSUM or its view selector cannot be loaded,
+   * returns an empty context with an explanatory note.
+   *
+   * @throws ResponseStatusException with status 404 if no such inconsistency exists
+   */
   public InconsistencyContextResponse getContext(UUID inconsistencyId) {
     OpenInconsistency entity =
         openInconsistencyRepo

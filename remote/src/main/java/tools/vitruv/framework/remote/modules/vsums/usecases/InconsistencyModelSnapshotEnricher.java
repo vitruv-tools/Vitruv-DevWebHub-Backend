@@ -22,6 +22,14 @@ public class InconsistencyModelSnapshotEnricher {
 
   private final ObjectMapper objectMapper;
 
+  /**
+   * Adds the entity named in the message to the first root resource of the encoded resource set if
+   * no entity with that name is present yet.
+   *
+   * @param encodedResourceSet the JSON-encoded resource set
+   * @param message the inconsistency message that may name an entity or component
+   * @return the enriched resource set, or the unchanged input if nothing was added
+   */
   public String enrich(String encodedResourceSet, String message) {
     if (encodedResourceSet == null
         || encodedResourceSet.isBlank()

@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import tools.vitruv.framework.remote.common.entities.BaseEntity;
 
+/** Persisted comment on an open inconsistency. */
 @Entity
 @Table(name = "inconsistency-comments")
 @AllArgsConstructor

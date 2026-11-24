@@ -86,15 +86,28 @@ public class InconsistencyUseCases {
         .toList();
   }
 
+  /** Returns all inconsistencies in state OPEN. */
   public List<OpenInconsistencyResponse> listOpen() {
     return list("OPEN");
   }
 
+  /**
+   * Returns the inconsistency with the given id.
+   *
+   * @throws ResponseStatusException with status 404 if no such inconsistency exists
+   */
   public OpenInconsistencyResponse get(UUID id) {
     reconcileStaleOpenInconsistencies();
     return toResponse(getEntityOrThrow(id));
   }
 
+  /**
+   * Creates an OPEN inconsistency for a parked propagation task, or returns the existing OPEN one
+   * for the same task.
+   *
+   * @throws ResponseStatusException with status 409 if the VSUM already has an OPEN inconsistency
+   *     for a different task
+   */
   public OpenInconsistency createOpen(
       UUID vsumId,
       String vsumName,
@@ -133,12 +146,14 @@ public class InconsistencyUseCases {
     return openInconsistencyRepo.save(entity);
   }
 
+  /** Returns whether the given VSUM has an inconsistency in state OPEN. */
   public boolean hasOpenForVsum(UUID vsumId) {
     return openInconsistencyRepo
         .findByVsumIdAndState(vsumId, OpenInconsistencyState.OPEN)
         .isPresent();
   }
 
+  /** Marks the OPEN inconsistency of the given propagation task as RESOLVED, if there is one. */
   public void markResolvedByTaskId(UUID taskId) {
     openInconsistencyRepo
         .findByTaskIdAndState(taskId, OpenInconsistencyState.OPEN)
@@ -150,6 +165,10 @@ public class InconsistencyUseCases {
             });
   }
 
+  /**
+   * Marks the OPEN inconsistency of the given propagation task as FAILED, if there is one, and
+   * replaces its message with the error message when one is given.
+   */
   public void markFailedByTaskId(UUID taskId, String errorMessage) {
     openInconsistencyRepo
         .findByTaskIdAndState(taskId, OpenInconsistencyState.OPEN)
@@ -180,6 +199,7 @@ public class InconsistencyUseCases {
     }
   }
 
+  /** Returns the comments of the given inconsistency, oldest first. */
   public List<InconsistencyCommentResponse> listComments(UUID inconsistencyId) {
     getEntityOrThrow(inconsistencyId);
     List<InconsistencyComment> comments =
@@ -281,6 +301,7 @@ public class InconsistencyUseCases {
     return new MentionService.Mention(row.getKind(), row.getTargetName());
   }
 
+  /** Returns summaries of the view updates of the inconsistency's VSUM, newest first. */
   public List<ViewUpdateSummaryResponse> listViewUpdates(UUID inconsistencyId) {
     OpenInconsistency entity = getEntityOrThrow(inconsistencyId);
     return viewUpdateRepo.findByVsumInfoIdOrderByTimestampDesc(entity.getVsumId()).stream()

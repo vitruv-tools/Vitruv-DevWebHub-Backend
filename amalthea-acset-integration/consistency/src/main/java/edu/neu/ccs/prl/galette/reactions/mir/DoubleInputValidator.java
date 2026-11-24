@@ -2,6 +2,7 @@ package edu.neu.ccs.prl.galette.reactions.mir;
 
 import tools.vitruv.change.interaction.UserInteractionOptions.InputValidator;
 
+/** Input validator that accepts any string parsable as a {@code double}. */
 public class DoubleInputValidator implements InputValidator {
 
   public static DoubleInputValidator getDoubleInputValidatorInstance() {

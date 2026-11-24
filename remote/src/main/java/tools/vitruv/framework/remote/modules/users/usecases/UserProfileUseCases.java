@@ -24,6 +24,7 @@ import tools.vitruv.framework.remote.modules.users.usecases.dtos.UpdateMetamodel
 import tools.vitruv.framework.remote.modules.users.usecases.dtos.UpsertUserRequest;
 import tools.vitruv.framework.remote.modules.users.usecases.dtos.UserProfileResponse;
 
+/** Use cases for user profiles: sign-in with profile tokens, listing, and metamodel selection. */
 @Service
 @RequiredArgsConstructor
 public class UserProfileUseCases {
@@ -115,6 +116,7 @@ public class UserProfileUseCases {
         .toList();
   }
 
+  /** Returns the full profile of the given user if the presented token matches. */
   @Transactional(readOnly = true)
   public UserProfileResponse get(String username, String presentedToken) {
     AppUser user = getOrThrow(username);
@@ -122,6 +124,10 @@ public class UserProfileUseCases {
     return toResponse(user, null);
   }
 
+  /**
+   * Replaces the user's known metamodels with the given catalog names if the presented token
+   * matches; unknown names are rejected.
+   */
   @Transactional
   public UserProfileResponse updateMetamodels(
       String username, UpdateMetamodelsRequest request, String presentedToken) {

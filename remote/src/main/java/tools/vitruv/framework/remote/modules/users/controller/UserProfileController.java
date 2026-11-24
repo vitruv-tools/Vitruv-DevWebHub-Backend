@@ -30,6 +30,7 @@ public class UserProfileController {
   private final UserProfileUseCases userProfileUseCases;
   private final KnowledgeMetamodelCatalog knowledgeMetamodelCatalog;
 
+  /** Signs in or creates the user and returns the profile, with a token when one is issued. */
   @PostMapping("/session")
   public UserProfileResponse signIn(
       @RequestBody UpsertUserRequest request,
@@ -38,16 +39,19 @@ public class UserProfileController {
     return userProfileUseCases.signIn(request, profileToken);
   }
 
+  /** Lists all user profiles as a directory without emails or metamodels. */
   @GetMapping
   public List<UserProfileResponse> list() {
     return userProfileUseCases.list();
   }
 
+  /** Lists the metamodels a user can claim knowledge of. */
   @GetMapping("/knowledge-metamodels")
   public List<KnowledgeMetamodel> listKnowledgeMetamodels() {
     return knowledgeMetamodelCatalog.listAvailable();
   }
 
+  /** Returns the profile of the given user if the profile token matches. */
   @GetMapping("/{username}")
   public UserProfileResponse get(
       @PathVariable String username,
@@ -56,6 +60,7 @@ public class UserProfileController {
     return userProfileUseCases.get(username, profileToken);
   }
 
+  /** Replaces the metamodels the given user knows if the profile token matches. */
   @PutMapping("/{username}/metamodels")
   public UserProfileResponse updateMetamodels(
       @PathVariable String username,

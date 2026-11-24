@@ -34,8 +34,18 @@ public class KnowledgeMetamodelCatalog {
 
   private record CachedPackages(long stamp, List<String> names) {}
 
+  /**
+   * A metamodel in the catalog.
+   *
+   * @param name the lower-case package name
+   * @param label the name with its first letter capitalized
+   */
   public record KnowledgeMetamodel(String name, String label) {}
 
+  /**
+   * Lists the metamodels of all providers in the configured providers directory, without
+   * duplicates.
+   */
   public List<KnowledgeMetamodel> listAvailable() {
     return listAvailable(Path.of(vsumProperties.vsumProvidersDir()));
   }
@@ -61,6 +71,7 @@ public class KnowledgeMetamodelCatalog {
     return new ArrayList<>(byName.values());
   }
 
+  /** Returns the package names of the given provider's ecore models, or an empty list if none. */
   public List<String> packageNamesForProvider(String providerName) {
     if (providerName == null || providerName.isBlank()) {
       return List.of();

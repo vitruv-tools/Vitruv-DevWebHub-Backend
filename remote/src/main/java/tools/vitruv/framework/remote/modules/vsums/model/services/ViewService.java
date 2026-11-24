@@ -41,6 +41,7 @@ import tools.vitruv.framework.views.changederivation.StateBasedChangeResolutionS
 import tools.vitruv.framework.views.impl.ModifiableView;
 import tools.vitruv.framework.views.impl.ViewCreatingViewType;
 
+/** Opens, updates and persists views on VSUMs and replays persisted view updates. */
 @SuppressWarnings("resource")
 @Service
 @RequiredArgsConstructor
@@ -87,6 +88,12 @@ public class ViewService {
         });
   }
 
+  /**
+   * State of a view.
+   *
+   * @param isClosed whether the view is closed or missing
+   * @param isOutdated whether the view is outdated; {@code null} if the view is closed
+   */
   public record ViewInfo(boolean isClosed, Boolean isOutdated) {}
 
   /**

@@ -3,7 +3,9 @@ package tools.vitruv.framework.remote.modules.vsums.usecases.strategies;
 import java.util.UUID;
 import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.OpenViewRequestBody;
 
+/** Strategy for view-level use cases, such as creating selectors and opening views. */
 public interface ViewUseCasesStrategy {
+  /** Result of creating a selector: its id and the serialized selectable objects. */
   record CreateSelectorResponse(UUID selectorId, String selectableObjects) {}
 
   /**
@@ -18,6 +20,7 @@ public interface ViewUseCasesStrategy {
    */
   CreateSelectorResponse createSelector(UUID vsumId, String viewTypeName);
 
+  /** Result of opening a view: its id and the encoded resource set of the view. */
   record OpenViewResponse(UUID viewId, String encodedResourceSet) {}
 
   /**

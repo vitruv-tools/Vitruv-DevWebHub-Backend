@@ -56,6 +56,10 @@ public class SystemRootVsumProvider implements VsumProvider {
         storagePath, new TestUserInteraction.ResultProvider(new TestUserInteraction()));
   }
 
+  /**
+   * Returns an initializer that creates the VSUM with the given interaction provider and ensures
+   * the System and Root models and their correspondence exist.
+   */
   public VirtualModelInitializer getInitializer(
       Path storagePath, InteractionResultProvider interactionResultProvider) {
     Resource.Factory.Registry.INSTANCE

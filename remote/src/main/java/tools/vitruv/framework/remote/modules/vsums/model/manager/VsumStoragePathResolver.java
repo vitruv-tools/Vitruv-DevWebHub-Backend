@@ -26,10 +26,22 @@ public final class VsumStoragePathResolver {
 
   private VsumStoragePathResolver() {}
 
+  /**
+   * Returns the stable directory name {@code <metamodel>-<uuid>}, with whitespace removed from
+   * the metamodel name.
+   */
   public static String directoryPrefix(String metaModelName, UUID id) {
     return metaModelName.replaceAll("\\s", "") + "-" + id;
   }
 
+  /**
+   * Resolves the storage folder of a VSUM and creates the storage root if needed.
+   *
+   * <p>Returns the stable folder if it exists, otherwise the most recently modified legacy
+   * folder with the same prefix, otherwise the (not yet created) stable folder path.
+   *
+   * @throws IOException if the storage root cannot be created or listed
+   */
   public static Path resolve(Path storageRoot, String metaModelName, UUID id) throws IOException {
     String prefix = directoryPrefix(metaModelName, id);
     Files.createDirectories(storageRoot);
@@ -59,6 +71,12 @@ public final class VsumStoragePathResolver {
     return resolved;
   }
 
+  /**
+   * Moves the given storage folder into the {@code .corrupt} folder under a timestamped name.
+   *
+   * @return the new location, or the given path unchanged if it does not exist
+   * @throws IOException if the folder can be neither moved nor copied
+   */
   public static Path quarantine(Path storagePath) throws IOException {
     if (storagePath == null || !Files.exists(storagePath)) {
       return storagePath;

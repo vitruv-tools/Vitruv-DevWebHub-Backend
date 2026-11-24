@@ -42,6 +42,7 @@ public class ResourceUtils {
     return createResourceWith(uri, content, createJsonResourceSet());
   }
 
+  /** Creates an empty {@link Resource} with the given {@link URI} in a new JSON resource set. */
   public static Resource createEmptyResource(URI uri) {
     return createResourceWith(uri, Collections.emptyList());
   }
