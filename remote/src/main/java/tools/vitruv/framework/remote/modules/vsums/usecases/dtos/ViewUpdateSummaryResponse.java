@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+/** Summary of a stored view update, including the length of its encoded resource set. */
 public record ViewUpdateSummaryResponse(
     UUID id,
     UUID vsumId,

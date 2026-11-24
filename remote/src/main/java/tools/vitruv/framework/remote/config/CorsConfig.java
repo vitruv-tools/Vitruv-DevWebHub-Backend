@@ -18,6 +18,7 @@ import org.springframework.web.filter.CorsFilter;
 @Configuration
 public class CorsConfig {
 
+  /** Creates the CORS filter that applies the policy to all endpoints. */
   @Bean
   public CorsFilter corsFilter() {
     CorsConfiguration config = new CorsConfiguration();

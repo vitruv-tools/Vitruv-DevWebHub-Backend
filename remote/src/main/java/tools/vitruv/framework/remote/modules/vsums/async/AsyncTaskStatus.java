@@ -5,6 +5,10 @@ import java.util.UUID;
 import lombok.Getter;
 import tools.vitruv.change.interaction.UserInteractionBase;
 
+/**
+ * Mutable status of one asynchronous propagation task, including a pending user interaction
+ * and the response handed back to the waiting worker thread.
+ */
 @Getter
 public class AsyncTaskStatus {
   private final UUID taskId;
@@ -28,6 +32,7 @@ public class AsyncTaskStatus {
 
   private final Object interactionLock = new Object();
 
+  /** Creates a status for a new task in state {@link AsyncTaskState#RUNNING}. */
   public AsyncTaskStatus(UUID taskId, UUID viewId) {
     this.taskId = taskId;
     this.viewId = viewId;
@@ -35,6 +40,7 @@ public class AsyncTaskStatus {
     this.createdAt = Instant.now();
   }
 
+  /** Marks the task as {@link AsyncTaskState#COMPLETED} with the given result. */
   public void complete(String result) {
     this.state = AsyncTaskState.COMPLETED;
     this.result = result;
@@ -42,6 +48,7 @@ public class AsyncTaskStatus {
     this.validationError = null;
   }
 
+  /** Marks the task as {@link AsyncTaskState#FAILED} with the given error message. */
   public void fail(String errorMessage) {
     this.state = AsyncTaskState.FAILED;
     this.errorMessage = errorMessage;
@@ -64,6 +71,8 @@ public class AsyncTaskStatus {
   }
 
   /**
+   * Marks the task as inconsistent and completes it.
+   *
    * @deprecated Prefer {@link #parkAsInconsistency()} so the hub can still resolve the same task.
    *     Kept for abort-style tests; wakes the worker and marks the task completed as {@code
    *     INCONSISTENT}.
@@ -88,6 +97,10 @@ public class AsyncTaskStatus {
     this.committedResourceSet = committedResourceSet;
   }
 
+  /**
+   * Registers the given interaction as pending and switches the task to {@link
+   * AsyncTaskState#WAITING_USER_INTERACTION}.
+   */
   public void setWaitingForInteraction(UserInteractionBase interaction) {
     this.pendingInteraction = interaction;
     this.state = AsyncTaskState.WAITING_USER_INTERACTION;
@@ -97,10 +110,21 @@ public class AsyncTaskStatus {
     this.validationError = validationError;
   }
 
+  /** Clears the validation error of the last interaction response. */
   public void clearValidationError() {
     this.validationError = null;
   }
 
+  /**
+   * Blocks the calling worker until a response is submitted or the task is marked inconsistent,
+   * then switches the task back to {@link AsyncTaskState#RUNNING}.
+   *
+   * @param <T> the expected interaction type of the response
+   * @return the submitted interaction response
+   * @throws InterruptedException if the waiting thread is interrupted
+   * @throws PropagationInconsistentException if the task was marked inconsistent while
+   *     waiting
+   */
   @SuppressWarnings("unchecked")
   public <T extends UserInteractionBase> T waitForInteractionResponse()
       throws InterruptedException {

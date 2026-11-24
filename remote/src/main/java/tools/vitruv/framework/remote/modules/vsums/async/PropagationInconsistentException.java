@@ -7,6 +7,11 @@ import java.util.UUID;
  * AsyncTaskState#INCONSISTENT}. Unblocks the propagation worker so the VSUM/view can be used again.
  */
 public class PropagationInconsistentException extends RuntimeException {
+  /**
+   * Creates the exception for the given task.
+   *
+   * @param taskId the ID of the halted task
+   */
   public PropagationInconsistentException(UUID taskId) {
     super("Propagation halted as inconsistent for task " + taskId);
   }

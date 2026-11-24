@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 /** Provides a specialized {@link StepTimer}, which records every single measurement. */
 public class SingleMeasureRecordingTimer extends StepTimer {
+  /** A single recorded measurement consisting of an amount and its time unit. */
   public static record SingleRecordedMeasure(long amount, TimeUnit unit) {}
 
   private final List<SingleRecordedMeasure> recordings = new ArrayList<>();

@@ -6,9 +6,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
+/** Configures the thread pool executor used for change propagation tasks. */
 @Configuration
 public class PropagationExecutorConfig {
 
+  /**
+   * Creates the propagation executor sized by the given properties; when the queue is full, the
+   * calling thread runs the task.
+   */
   @Bean(name = "propagationExecutor")
   public Executor propagationExecutor(PropagationProperties properties) {
     ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();

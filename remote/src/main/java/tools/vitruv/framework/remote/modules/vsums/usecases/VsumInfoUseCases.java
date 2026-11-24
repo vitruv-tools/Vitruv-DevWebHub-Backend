@@ -9,11 +9,13 @@ import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.CreateVsumReque
 import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.UpdateVsumInfoRequestBody;
 import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.VsumInfoResponseBody;
 
+/** Use cases for listing, creating, and updating VSUM metadata. */
 @Component
 @RequiredArgsConstructor
 public class VsumInfoUseCases {
   private final VsumInfoRepo vsumInfoRepo;
 
+  /** Returns the metadata of all stored VSUMs. */
   public VsumInfoResponseBody[] getVsumInfos() {
     return vsumInfoRepo.findAll().stream()
         .map(
@@ -26,11 +28,17 @@ public class VsumInfoUseCases {
         .toArray(VsumInfoResponseBody[]::new);
   }
 
+  /** Creates and stores metadata for a new VSUM. */
   public VsumInfoResponseBody createVsumInfo(CreateVsumRequestBody body) {
     VsumInfo info = new VsumInfo(body.metamodelName(), body.name(), body.description());
     return saveVsumInfoAndReturnBody(info);
   }
 
+  /**
+   * Updates the name and description of an existing VSUM.
+   *
+   * @throws IllegalArgumentException if no VSUM with the given id exists
+   */
   public VsumInfoResponseBody updateVsumInfo(UUID vsumId, UpdateVsumInfoRequestBody body) {
     VsumInfo info =
         vsumInfoRepo

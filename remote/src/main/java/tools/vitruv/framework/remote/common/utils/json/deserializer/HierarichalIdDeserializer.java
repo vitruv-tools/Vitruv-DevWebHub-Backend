@@ -11,10 +11,20 @@ import org.eclipse.emfcloud.jackson.databind.deser.EcoreReferenceDeserializer;
 import org.eclipse.emfcloud.jackson.databind.deser.ReferenceEntry;
 import tools.vitruv.framework.remote.common.utils.json.IdTransformation;
 
+/**
+ * Deserializes references given as hierarchical ID strings into global references, delegating
+ * all other representations to the standard EMF reference deserializer.
+ */
 public class HierarichalIdDeserializer extends JsonDeserializer<ReferenceEntry> {
   private final EcoreReferenceDeserializer standardDeserializer;
   private final IdTransformation transformation;
 
+  /**
+   * Creates a deserializer that wraps the given standard deserializer.
+   *
+   * @param standardDeserializer the deserializer used for non-string references
+   * @param transformation the transformation from hierarchical IDs to global URIs
+   */
   public HierarichalIdDeserializer(
       EcoreReferenceDeserializer standardDeserializer, IdTransformation transformation) {
     this.standardDeserializer = standardDeserializer;

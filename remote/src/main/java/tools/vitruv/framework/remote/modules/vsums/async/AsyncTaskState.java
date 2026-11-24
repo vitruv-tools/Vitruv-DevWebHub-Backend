@@ -1,5 +1,6 @@
 package tools.vitruv.framework.remote.modules.vsums.async;
 
+/** Lifecycle states of an asynchronous propagation task. */
 public enum AsyncTaskState {
   RUNNING,
   WAITING_USER_INTERACTION,

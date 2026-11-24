@@ -28,8 +28,10 @@ import tools.vitruv.framework.vsum.VirtualModel;
 import tools.vitruv.framework.vsum.VirtualModelBuilder;
 import tools.vitruv.framework.vsum.internal.InternalVirtualModel;
 
+/** Manual test driver that builds an Amalthea-to-ASCET VSUM and inserts a task into it. */
 public class Test {
 
+  /** Runs {@link #insertTask(Path)} with the project directory {@code ./testdir}. */
   public static void main(String[] args) {
 
     insertTask(Path.of("./testdir"));

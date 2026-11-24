@@ -15,6 +15,10 @@ import tools.vitruv.framework.remote.modules.vsums.usecases.PropagationTaskUseCa
 import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.OpenInconsistencyResponse;
 import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.PropagationTaskStatusResponse;
 
+/**
+ * REST endpoints for polling asynchronous propagation tasks and answering their user
+ * interactions.
+ */
 @RestController
 @RequestMapping("/v1/tasks")
 @RequiredArgsConstructor
@@ -22,11 +26,17 @@ public class PropagationTaskController {
 
   private final PropagationTaskUseCases propagationTaskUseCases;
 
+  /** Returns the status of the given propagation task. */
   @GetMapping("/{taskId}")
   public PropagationTaskStatusResponse getTaskStatus(@PathVariable UUID taskId) {
     return propagationTaskUseCases.getTaskStatus(taskId);
   }
 
+  /**
+   * Submits the answer to the pending user interaction of the given task.
+   *
+   * @param interactionJson the JSON-serialized interaction response
+   */
   @PostMapping("/{taskId}/interaction")
   @ResponseStatus(NO_CONTENT)
   public void submitInteraction(@PathVariable UUID taskId, @RequestBody String interactionJson) {

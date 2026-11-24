@@ -24,6 +24,7 @@ import tools.vitruv.framework.remote.modules.vsums.model.wrapper.ViewWrapper;
 import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.OpenInconsistencyResponse;
 import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.PropagationTaskStatusResponse;
 
+/** Use cases for querying asynchronous propagation tasks and answering their user interactions. */
 @Service
 @RequiredArgsConstructor
 public class PropagationTaskUseCases {
@@ -35,11 +36,22 @@ public class PropagationTaskUseCases {
   private final OpenInconsistencyRepo openInconsistencyRepo;
   private final InconsistencyModelSnapshotEnricher modelSnapshotEnricher;
 
+  /**
+   * Returns the status of the given propagation task, including a pending interaction or result.
+   *
+   * @throws ResponseStatusException with status 404 if the task does not exist
+   */
   public PropagationTaskStatusResponse getTaskStatus(UUID taskId) {
     AsyncTaskStatus status = getTaskOrThrow(taskId);
     return toResponse(status);
   }
 
+  /**
+   * Deserializes the user's answer and hands it to the task waiting for user interaction.
+   *
+   * @throws ResponseStatusException with status 404 if the task or its view does not exist, 409 if
+   *     the task is not waiting for user interaction, or 400 if the JSON is invalid
+   */
   public void submitInteraction(UUID taskId, String interactionJson) {
     AsyncTaskStatus status = getTaskOrThrow(taskId);
 

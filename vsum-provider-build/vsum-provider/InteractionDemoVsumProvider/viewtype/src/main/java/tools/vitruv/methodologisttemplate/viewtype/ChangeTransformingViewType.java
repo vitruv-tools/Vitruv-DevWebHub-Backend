@@ -16,6 +16,8 @@ import tools.vitruv.methodologisttemplate.viewtype.impl.ChangeTransformingViewTy
 public abstract class ChangeTransformingViewType extends IdentityMappingViewType {
 
   /**
+   * Creates a new view type with the given name.
+   *
    * @param name the name of the viewtype
    */
   public ChangeTransformingViewType(String name) {

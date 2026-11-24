@@ -13,6 +13,7 @@ public record InconsistencyContextResponse(
     String note,
     List<ModelElementNode> elements,
     List<CorrespondenceEdge> correspondences) {
+  /** A model element in the visualization, optionally nested under a parent element. */
   public record ModelElementNode(
       String id,
       String displayName,
@@ -22,6 +23,7 @@ public record InconsistencyContextResponse(
       String role,
       String parentId) {}
 
+  /** A correspondence between two model elements, referenced by their ids. */
   public record CorrespondenceEdge(
       String sourceId, String targetId, String sourceLabel, String targetLabel) {}
 }

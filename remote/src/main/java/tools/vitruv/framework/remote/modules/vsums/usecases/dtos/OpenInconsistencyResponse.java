@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.UUID;
 import tools.vitruv.framework.remote.modules.vsums.model.entities.OpenInconsistencyState;
 
+/** An inconsistency together with its interaction payload and resolution details. */
 public record OpenInconsistencyResponse(
     UUID id,
     UUID vsumId,

@@ -2,6 +2,7 @@ package edu.neu.ccs.prl.galette.reactions.mir;
 
 import tools.vitruv.change.interaction.UserInteractionOptions;
 
+/** Input validator that accepts strings parsable as a non-negative {@code double}. */
 public class PositiveDoubleValidator implements UserInteractionOptions.InputValidator {
 
   public static PositiveDoubleValidator getPositiveDoubleValidatorInstance() {

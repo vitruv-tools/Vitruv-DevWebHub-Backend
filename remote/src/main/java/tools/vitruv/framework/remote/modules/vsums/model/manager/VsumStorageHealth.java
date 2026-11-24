@@ -51,6 +51,10 @@ public final class VsumStorageHealth {
     return true;
   }
 
+  /**
+   * Returns whether any model file up to three directory levels below the given path contains
+   * JSON instead of XMI.
+   */
   public static boolean hasCorruptModelFiles(Path storagePath) {
     if (storagePath == null || !Files.isDirectory(storagePath)) {
       return false;
@@ -66,6 +70,7 @@ public final class VsumStorageHealth {
     }
   }
 
+  /** Returns whether the given error or one of its causes reports dangling EMF proxies. */
   public static boolean isDanglingProxyFailure(Throwable error) {
     Throwable current = error;
     while (current != null) {
@@ -83,6 +88,7 @@ public final class VsumStorageHealth {
     return false;
   }
 
+  /** Returns whether the given error or one of its causes is an XML parse failure. */
   public static boolean isXmlParseFailure(Throwable error) {
     Throwable current = error;
     while (current != null) {

@@ -6,6 +6,7 @@ import java.net.InetSocketAddress;
 import java.util.List;
 import tools.vitruv.framework.remote.server.rest.PathEndointCollector;
 
+/** HTTP server based on the JDK {@link HttpServer} that serves the Vitruvius endpoints. */
 public class VitruvJavaHttpServer {
   private final HttpServer server;
 

@@ -29,10 +29,12 @@ public class ServerInteractionResultProvider implements InteractionResultProvide
 
   private final PropagationTaskRegistry taskRegistry;
 
+  /** Binds the given task ID to the current worker thread. */
   public static void setCurrentTaskId(UUID taskId) {
     CURRENT_TASK_ID.set(taskId);
   }
 
+  /** Removes the task ID bound to the current worker thread. */
   public static void clearCurrentTaskId() {
     CURRENT_TASK_ID.remove();
   }
