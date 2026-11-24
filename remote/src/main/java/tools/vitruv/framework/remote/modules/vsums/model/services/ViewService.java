@@ -2,6 +2,8 @@ package tools.vitruv.framework.remote.modules.vsums.model.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.kit.ipd.sdq.commons.util.org.eclipse.emf.ecore.resource.ResourceCopier;
+import java.time.Instant;
+import java.util.*;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,9 +37,6 @@ import tools.vitruv.framework.views.changederivation.StateBasedChangeResolutionS
 import tools.vitruv.framework.views.impl.ModifiableView;
 import tools.vitruv.framework.views.impl.ViewCreatingViewType;
 
-import java.time.Instant;
-import java.util.*;
-
 @SuppressWarnings("resource")
 @Service
 @RequiredArgsConstructor
@@ -55,39 +54,46 @@ public class ViewService {
    * @param vsumWrapper the VsumWrapper instance for which the last update is to be loaded.
    */
   public void loadLastUpdate(@NonNull VsumWrapper vsumWrapper) {
-    val viewUpdate = viewUpdateRepo.findFirstByVsumInfoIdOrderByTimestampDesc(vsumWrapper.info().getId());
+    val viewUpdate =
+        viewUpdateRepo.findFirstByVsumInfoIdOrderByTimestampDesc(vsumWrapper.info().getId());
     if (viewUpdate == null) {
       return;
     }
 
     val selectorWrapper = createSelector(vsumWrapper, viewUpdate.getViewTypeName());
-    val selectedObjects = selectorWrapper.selectableObjects().values().stream()
-        .filter(it -> viewUpdate.getSelectedObjectEClassNames().contains(it.eClass().getInstanceTypeName()))
-        .toArray(EObject[]::new);
+    val selectedObjects =
+        selectorWrapper.selectableObjects().values().stream()
+            .filter(
+                it ->
+                    viewUpdate
+                        .getSelectedObjectEClassNames()
+                        .contains(it.eClass().getInstanceTypeName()))
+            .toArray(EObject[]::new);
 
     val viewWrapper = openView(selectorWrapper, selectedObjects);
 
-    InteractionContext.runInStateReplay(() -> {
-      try (val view = viewWrapper.view()) {
-        commitResourceSet(viewWrapper, viewUpdate.getEncodedResourceSet());
-        view.update();
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-    });
+    InteractionContext.runInStateReplay(
+        () -> {
+          try (val view = viewWrapper.view()) {
+            commitResourceSet(viewWrapper, viewUpdate.getEncodedResourceSet());
+            view.update();
+          } catch (Exception e) {
+            throw new RuntimeException(e);
+          }
+        });
   }
 
-  public record ViewInfo(boolean isClosed, Boolean isOutdated) {
-  }
+  public record ViewInfo(boolean isClosed, Boolean isOutdated) {}
 
   /**
-   * Retrieves information about the state of a view wrapped in a ViewWrapper instance.
-   * This method determines if the view is closed and, if applicable, whether it is outdated.
-   * Additionally, if the view is closed but present, a specified action will be executed.
+   * Retrieves information about the state of a view wrapped in a ViewWrapper instance. This method
+   * determines if the view is closed and, if applicable, whether it is outdated. Additionally, if
+   * the view is closed but present, a specified action will be executed.
    *
-   * @param viewWrapper              the wrapper object containing the view to be examined; may be null
+   * @param viewWrapper the wrapper object containing the view to be examined; may be null
    * @param onViewIsClosedButPresent a Runnable to be executed if the view is closed but present
-   * @return a ViewInfo object containing the closed state and outdated state (if applicable) of the view
+   * @return a ViewInfo object containing the closed state and outdated state (if applicable) of the
+   *     view
    */
   public ViewInfo getViewInfo(ViewWrapper viewWrapper, @NonNull Runnable onViewIsClosedButPresent) {
     if (viewWrapper == null) {
@@ -108,17 +114,23 @@ public class ViewService {
   /**
    * Creates a new selector for a specified view type in the virtual model.
    *
-   * @param vsumWrapper  a wrapper containing the virtual model and related metadata; must not be null
-   * @param viewTypeName the name of the view type to be used for creating the selector; must not be null
-   * @return a {@link SelectorWrapper} containing the created selector, its associated metadata,
-   * and the mapping between UUIDs and elements
-   * @throws IllegalArgumentException if the specified view type name is not found in the virtual model
+   * @param vsumWrapper a wrapper containing the virtual model and related metadata; must not be
+   *     null
+   * @param viewTypeName the name of the view type to be used for creating the selector; must not be
+   *     null
+   * @return a {@link SelectorWrapper} containing the created selector, its associated metadata, and
+   *     the mapping between UUIDs and elements
+   * @throws IllegalArgumentException if the specified view type name is not found in the virtual
+   *     model
    */
-  public SelectorWrapper createSelector(@NonNull VsumWrapper vsumWrapper, @NonNull String viewTypeName) {
-    val viewType = vsumWrapper.virtualModel().getViewTypes().stream()
-        .filter(it -> it.getName().equals(viewTypeName))
-        .findFirst()
-        .orElseThrow(() -> new IllegalArgumentException("View type not found: " + viewTypeName));
+  public SelectorWrapper createSelector(
+      @NonNull VsumWrapper vsumWrapper, @NonNull String viewTypeName) {
+    val viewType =
+        vsumWrapper.virtualModel().getViewTypes().stream()
+            .filter(it -> it.getName().equals(viewTypeName))
+            .findFirst()
+            .orElseThrow(
+                () -> new IllegalArgumentException("View type not found: " + viewTypeName));
 
     val selectorId = UUID.randomUUID();
 
@@ -127,9 +139,10 @@ public class ViewService {
     val copiedSelection = EcoreUtil.copyAll(originalSelection).stream().toList();
 
     // Wrap selection in resource for serialization.
-    val resource = (JsonResource) ResourceUtils.createResourceWith(
-        URI.createURI(JsonFieldName.TEMP_VALUE), copiedSelection
-    );
+    val resource =
+        (JsonResource)
+            ResourceUtils.createResourceWith(
+                URI.createURI(JsonFieldName.TEMP_VALUE), copiedSelection);
 
     // Create EObject to UUID mapping.
     val objects = new HashMap<UUID, EObject>();
@@ -143,14 +156,17 @@ public class ViewService {
   }
 
   /**
-   * Opens a view by processing the selected objects and creating a new view with the given selector.
+   * Opens a view by processing the selected objects and creating a new view with the given
+   * selector.
    *
-   * @param selectorWrapper The wrapper containing the selector used to manage object selection and view creation.
+   * @param selectorWrapper The wrapper containing the selector used to manage object selection and
+   *     view creation.
    * @param selectedObjects An array of EObjects that will be selected and included in the view.
-   * @return A {@code ViewWrapper} containing details of the created view, including its ID, the view instance,
-   * a copied ResourceSet, and the associated vsumWrapper.
+   * @return A {@code ViewWrapper} containing details of the created view, including its ID, the
+   *     view instance, a copied ResourceSet, and the associated vsumWrapper.
    */
-  public ViewWrapper openView(@NonNull SelectorWrapper selectorWrapper, @NonNull EObject[] selectedObjects) {
+  public ViewWrapper openView(
+      @NonNull SelectorWrapper selectorWrapper, @NonNull EObject[] selectedObjects) {
     for (EObject selectedObject : selectedObjects) {
       selectorWrapper.selector().setSelected(selectedObject, true);
     }
@@ -167,24 +183,27 @@ public class ViewService {
   }
 
   /**
-   * Commits changes to the resource set associated with a given view wrapper. It processes
-   * the provided serialized resource set, identifies changes, and applies those changes
-   * to the current resource set, if any exist. The method returns a change object
-   * representing all the committed changes.
+   * Commits changes to the resource set associated with a given view wrapper. It processes the
+   * provided serialized resource set, identifies changes, and applies those changes to the current
+   * resource set, if any exist. The method returns a change object representing all the committed
+   * changes.
    *
-   * @param viewWrapper        The wrapper around the view and its related utilities. Must not be null.
-   * @param encodedResourceSet The serialized representation of the resource set to commit. Must not be null.
-   * @return A {@code VitruviusChange} object representing the committed changes, or {@code null}
-   * if no changes were detected.
-   * @throws RuntimeException If the serialized resource set cannot be deserialized, or if
-   *                          the changes are rejected during commitment.
+   * @param viewWrapper The wrapper around the view and its related utilities. Must not be null.
+   * @param encodedResourceSet The serialized representation of the resource set to commit. Must not
+   *     be null.
+   * @return A {@code VitruviusChange} object representing the committed changes, or {@code null} if
+   *     no changes were detected.
+   * @throws RuntimeException If the serialized resource set cannot be deserialized, or if the
+   *     changes are rejected during commitment.
    */
   @SuppressWarnings("unchecked")
-  public VitruviusChange<?> commitResourceSet(@NonNull ViewWrapper viewWrapper, @NonNull String encodedResourceSet) {
+  public VitruviusChange<?> commitResourceSet(
+      @NonNull ViewWrapper viewWrapper, @NonNull String encodedResourceSet) {
 
     final ResourceSet resourceSet;
     try {
-      resourceSet = viewWrapper.vsumWrapper().jsonMapper().deserialize(encodedResourceSet, ResourceSet.class);
+      resourceSet =
+          viewWrapper.vsumWrapper().jsonMapper().deserialize(encodedResourceSet, ResourceSet.class);
     } catch (JsonProcessingException e) {
       log.warn("Failed to deserialize request body: {}", e.getMessage());
       throw new RuntimeException(e.getMessage());
@@ -200,17 +219,18 @@ public class ViewService {
     val allChanges = new LinkedList<VitruviusChange<HierarchicalId>>();
     resourceSet
         .getResources()
-        .forEach(it -> {
-          val resource = resolveExistingResource(resourceMap, currentResources, it.getURI());
-          if (resource == null) {
-            throw new RuntimeException(
-                "Cannot match committed resource to open view: " + it.getURI());
-          }
-          val changes = findChanges(resource, it);
-          if (!changes.getEChanges().isEmpty()) {
-            allChanges.add(changes);
-          }
-        });
+        .forEach(
+            it -> {
+              val resource = resolveExistingResource(resourceMap, currentResources, it.getURI());
+              if (resource == null) {
+                throw new RuntimeException(
+                    "Cannot match committed resource to open view: " + it.getURI());
+              }
+              val changes = findChanges(resource, it);
+              if (!changes.getEChanges().isEmpty()) {
+                allChanges.add(changes);
+              }
+            });
 
     if (allChanges.isEmpty()) {
       log.info("No changes detected.");
@@ -222,11 +242,12 @@ public class ViewService {
 
     change
         .getEChanges()
-        .forEach(it -> {
-          if (it instanceof InsertRootEObject<?> echange) {
-            echange.setResource(new ResourceImpl(URI.createURI(echange.getUri())));
-          }
-        });
+        .forEach(
+            it -> {
+              if (it instanceof InsertRootEObject<?> echange) {
+                echange.setResource(new ResourceImpl(URI.createURI(echange.getUri())));
+              }
+            });
 
     val type = (ViewCreatingViewType<?, ?>) viewWrapper.view().getViewType();
     try {
@@ -238,11 +259,10 @@ public class ViewService {
     return change;
   }
 
-  /**
-   * Serializes the current open view resource set without running {@code view.update()}.
-   */
+  /** Serializes the current open view resource set without running {@code view.update()}. */
   public String serializeResourceSet(@NonNull ViewWrapper viewWrapper) {
-    val resources = viewWrapper.view().getRootObjects().stream().map(EObject::eResource).distinct().toList();
+    val resources =
+        viewWrapper.view().getRootObjects().stream().map(EObject::eResource).distinct().toList();
     val resourceSet = new ResourceSetImpl();
     ResourceCopier.copyViewResources(resources, resourceSet);
 
@@ -254,8 +274,8 @@ public class ViewService {
   }
 
   /**
-   * Persists the current view state as a {@link ViewUpdate} without applying propagation.
-   * Used when parking an inconsistency so the hub can visualize in-progress models.
+   * Persists the current view state as a {@link ViewUpdate} without applying propagation. Used when
+   * parking an inconsistency so the hub can visualize in-progress models.
    */
   public void saveViewSnapshot(@NonNull ViewWrapper viewWrapper) {
     if (viewWrapper.view().isClosed()) {
@@ -264,36 +284,37 @@ public class ViewService {
 
     String encodedResourceSet = serializeResourceSet(viewWrapper);
 
-    val selectedObjectNames = viewWrapper.view().getRootObjects().stream()
-        .map(rootObject -> rootObject.eClass().getInstanceTypeName())
-        .toList();
+    val selectedObjectNames =
+        viewWrapper.view().getRootObjects().stream()
+            .map(rootObject -> rootObject.eClass().getInstanceTypeName())
+            .toList();
 
     UUID vsumId = viewWrapper.vsumWrapper().info().getId();
     VsumInfo managedInfo = vsumInfoRepo.findById(vsumId).orElse(null);
     if (managedInfo == null) {
       log.warn(
-          "Skipping view-update snapshot for missing VSUM {} (row deleted while a view/task was still open).",
+          "Skipping view-update snapshot for missing VSUM {} (row deleted while a view/task was"
+              + " still open).",
           vsumId);
       return;
     }
 
-    val viewUpdate = new ViewUpdate(
-        managedInfo,
-        viewWrapper.view().getViewType().getName(),
-        selectedObjectNames,
-        encodedResourceSet,
-        Instant.now()
-    );
+    val viewUpdate =
+        new ViewUpdate(
+            managedInfo,
+            viewWrapper.view().getViewType().getName(),
+            selectedObjectNames,
+            encodedResourceSet,
+            Instant.now());
     viewUpdateRepo.save(viewUpdate);
   }
 
   /**
    * Applies the update of the given {@link ViewWrapper} and persists the changes in a repository.
-   * The method processes the view's resources, serializes the resource set to a string,
-   * and constructs a {@link ViewUpdate} object for saving in the repository.
+   * The method processes the view's resources, serializes the resource set to a string, and
+   * constructs a {@link ViewUpdate} object for saving in the repository.
    *
-   * @param viewWrapper the wrapper encapsulating the view and related metadata;
-   *                    must not be null
+   * @param viewWrapper the wrapper encapsulating the view and related metadata; must not be null
    * @return a serialized string representation of the updated resource set
    * @throws RuntimeException if an issue occurs during resource serialization
    */
@@ -302,26 +323,28 @@ public class ViewService {
 
     String encodedResourceSet = serializeResourceSet(viewWrapper);
 
-    val selectedObjectNames = viewWrapper.view().getRootObjects().stream()
-        .map(rootObject -> rootObject.eClass().getInstanceTypeName())
-        .toList();
+    val selectedObjectNames =
+        viewWrapper.view().getRootObjects().stream()
+            .map(rootObject -> rootObject.eClass().getInstanceTypeName())
+            .toList();
 
     UUID vsumId = viewWrapper.vsumWrapper().info().getId();
     VsumInfo managedInfo = vsumInfoRepo.findById(vsumId).orElse(null);
     if (managedInfo == null) {
       log.warn(
-          "Skipping view-update snapshot for missing VSUM {} (row deleted while a view/task was still open).",
+          "Skipping view-update snapshot for missing VSUM {} (row deleted while a view/task was"
+              + " still open).",
           vsumId);
       return encodedResourceSet;
     }
 
-    val viewUpdate = new ViewUpdate(
-        managedInfo,
-        viewWrapper.view().getViewType().getName(),
-        selectedObjectNames,
-        encodedResourceSet,
-        Instant.now()
-    );
+    val viewUpdate =
+        new ViewUpdate(
+            managedInfo,
+            viewWrapper.view().getViewType().getName(),
+            selectedObjectNames,
+            encodedResourceSet,
+            Instant.now());
     viewUpdateRepo.save(viewUpdate);
 
     return encodedResourceSet;
@@ -338,10 +361,10 @@ public class ViewService {
   }
 
   /**
-   * Match incoming commit resources to open-view resources even when URI prefixes differ
-   * (e.g. client sends {@code /example.model2}, view holds an absolute vsum-storage file URI).
-   * Added for SystemRootVsum after {@code persistProjectRelative} / {@code IdTransformation} fixes;
-   * see SystemRootVsumProvider/README.md.
+   * Match incoming commit resources to open-view resources even when URI prefixes differ (e.g.
+   * client sends {@code /example.model2}, view holds an absolute vsum-storage file URI). Added for
+   * SystemRootVsum after {@code persistProjectRelative} / {@code IdTransformation} fixes; see
+   * SystemRootVsumProvider/README.md.
    */
   private Resource resolveExistingResource(
       Map<URI, Resource> resourceMap, List<Resource> currentResources, URI incomingUri) {

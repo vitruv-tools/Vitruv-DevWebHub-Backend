@@ -1,10 +1,9 @@
 package tools.vitruv.framework.remote.modules.vsums.async;
 
-import lombok.Getter;
-import tools.vitruv.change.interaction.UserInteractionBase;
-
 import java.time.Instant;
 import java.util.UUID;
+import lombok.Getter;
+import tools.vitruv.change.interaction.UserInteractionBase;
 
 @Getter
 public class AsyncTaskStatus {
@@ -18,14 +17,15 @@ public class AsyncTaskStatus {
   private volatile UserInteractionBase pendingInteraction;
   private volatile UserInteractionBase interactionResponse;
   private volatile String validationError;
-  /**
-   * Resource set committed at the start of async propagation (includes user edits).
-   */
+
+  /** Resource set committed at the start of async propagation (includes user edits). */
   private volatile String committedResourceSet;
+
   /**
    * True when the editor dismissed the dialog; worker stays waiting so the hub can answer later.
    */
   private volatile boolean parkedAsInconsistency;
+
   private final Object interactionLock = new Object();
 
   public AsyncTaskStatus(UUID taskId, UUID viewId) {
@@ -50,8 +50,8 @@ public class AsyncTaskStatus {
   }
 
   /**
-   * Parks a waiting interaction as an inconsistency without aborting the worker.
-   * The task stays {@link AsyncTaskState#WAITING_USER_INTERACTION} so the hub can submit an answer later.
+   * Parks a waiting interaction as an inconsistency without aborting the worker. The task stays
+   * {@link AsyncTaskState#WAITING_USER_INTERACTION} so the hub can submit an answer later.
    */
   public void parkAsInconsistency() {
     synchronized (interactionLock) {
@@ -65,7 +65,8 @@ public class AsyncTaskStatus {
 
   /**
    * @deprecated Prefer {@link #parkAsInconsistency()} so the hub can still resolve the same task.
-   * Kept for abort-style tests; wakes the worker and marks the task completed as {@code INCONSISTENT}.
+   *     Kept for abort-style tests; wakes the worker and marks the task completed as {@code
+   *     INCONSISTENT}.
    */
   @Deprecated
   public void markInconsistent() {
@@ -101,7 +102,8 @@ public class AsyncTaskStatus {
   }
 
   @SuppressWarnings("unchecked")
-  public <T extends UserInteractionBase> T waitForInteractionResponse() throws InterruptedException {
+  public <T extends UserInteractionBase> T waitForInteractionResponse()
+      throws InterruptedException {
     synchronized (interactionLock) {
       while (interactionResponse == null && state == AsyncTaskState.WAITING_USER_INTERACTION) {
         interactionLock.wait();

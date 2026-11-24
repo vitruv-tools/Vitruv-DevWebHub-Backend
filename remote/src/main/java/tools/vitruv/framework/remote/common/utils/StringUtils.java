@@ -3,8 +3,8 @@ package tools.vitruv.framework.remote.common.utils;
 import java.security.SecureRandom;
 
 /**
- * Utility class providing methods for common string-related operations.
- * This class cannot be instantiated.
+ * Utility class providing methods for common string-related operations. This class cannot be
+ * instantiated.
  */
 public final class StringUtils {
 
@@ -20,8 +20,7 @@ public final class StringUtils {
    * @throws IllegalArgumentException If the specified length is not a positive integer.
    */
   public static String randomString(int length) {
-    final String alphanumeric =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    final String alphanumeric = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     final SecureRandom random = new SecureRandom();
 
     if (length <= 0) {

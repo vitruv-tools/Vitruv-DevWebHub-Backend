@@ -1,14 +1,13 @@
 package tools.vitruv.framework.remote.modules.vsums.controller;
 
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import tools.vitruv.framework.remote.modules.vsums.usecases.InconsistencyUseCases;
 import tools.vitruv.framework.remote.modules.vsums.usecases.InconsistencyVisualizationUseCases;
 import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.*;
-
-import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/v1/inconsistencies")
@@ -19,9 +18,7 @@ public class InconsistencyController {
   private final InconsistencyVisualizationUseCases inconsistencyVisualizationUseCases;
 
   @GetMapping
-  public List<OpenInconsistencyResponse> list(
-      @RequestParam(required = false) String state
-  ) {
+  public List<OpenInconsistencyResponse> list(@RequestParam(required = false) String state) {
     return inconsistencyUseCases.list(state);
   }
 
@@ -48,17 +45,13 @@ public class InconsistencyController {
   @PostMapping("/{id}/comments")
   @ResponseStatus(HttpStatus.CREATED)
   public InconsistencyCommentResponse addComment(
-      @PathVariable UUID id,
-      @RequestBody CreateInconsistencyCommentRequest request
-  ) {
+      @PathVariable UUID id, @RequestBody CreateInconsistencyCommentRequest request) {
     return inconsistencyUseCases.addComment(id, request);
   }
 
   @PostMapping("/{id}/resolution")
   public OpenInconsistencyResponse recordResolution(
-      @PathVariable UUID id,
-      @RequestBody RecordInconsistencyResolutionRequest request
-  ) {
+      @PathVariable UUID id, @RequestBody RecordInconsistencyResolutionRequest request) {
     return inconsistencyUseCases.recordResolution(id, request);
   }
 

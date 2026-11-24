@@ -21,7 +21,8 @@ public class VitruviusInteractionResultProvider implements InteractionResultProv
   private final PropagationTaskRegistry taskRegistry;
   private final InteractionResultProvider syncProvider =
       new TestUserInteraction.ResultProvider(new TestUserInteraction());
-  private final InteractionResultProvider replayProvider = new StateReplayInteractionResultProvider();
+  private final InteractionResultProvider replayProvider =
+      new StateReplayInteractionResultProvider();
 
   @Override
   public boolean getConfirmationInteractionResult(
@@ -31,13 +32,14 @@ public class VitruviusInteractionResultProvider implements InteractionResultProv
       String positiveDecisionText,
       String negativeDecisionText,
       String cancelDecisionText) {
-    return delegate().getConfirmationInteractionResult(
-        windowModality,
-        title,
-        message,
-        positiveDecisionText,
-        negativeDecisionText,
-        cancelDecisionText);
+    return delegate()
+        .getConfirmationInteractionResult(
+            windowModality,
+            title,
+            message,
+            positiveDecisionText,
+            negativeDecisionText,
+            cancelDecisionText);
   }
 
   @Override
@@ -47,8 +49,9 @@ public class VitruviusInteractionResultProvider implements InteractionResultProv
       String message,
       String positiveDecisionText,
       NotificationType notificationType) {
-    delegate().getNotificationInteractionResult(
-        windowModality, title, message, positiveDecisionText, notificationType);
+    delegate()
+        .getNotificationInteractionResult(
+            windowModality, title, message, positiveDecisionText, notificationType);
   }
 
   @Override
@@ -59,13 +62,14 @@ public class VitruviusInteractionResultProvider implements InteractionResultProv
       String positiveDecisionText,
       String cancelDecisionText,
       InputValidator inputValidator) {
-    return delegate().getTextInputInteractionResult(
-        windowModality,
-        title,
-        message,
-        positiveDecisionText,
-        cancelDecisionText,
-        inputValidator);
+    return delegate()
+        .getTextInputInteractionResult(
+            windowModality,
+            title,
+            message,
+            positiveDecisionText,
+            cancelDecisionText,
+            inputValidator);
   }
 
   @Override
@@ -76,8 +80,9 @@ public class VitruviusInteractionResultProvider implements InteractionResultProv
       String positiveDecisionText,
       String cancelDecisionText,
       Iterable<String> choices) {
-    return delegate().getMultipleChoiceSingleSelectionInteractionResult(
-        windowModality, title, message, positiveDecisionText, cancelDecisionText, choices);
+    return delegate()
+        .getMultipleChoiceSingleSelectionInteractionResult(
+            windowModality, title, message, positiveDecisionText, cancelDecisionText, choices);
   }
 
   @Override
@@ -88,15 +93,17 @@ public class VitruviusInteractionResultProvider implements InteractionResultProv
       String positiveDecisionText,
       String cancelDecisionText,
       Iterable<String> choices) {
-    return delegate().getMultipleChoiceMultipleSelectionInteractionResult(
-        windowModality, title, message, positiveDecisionText, cancelDecisionText, choices);
+    return delegate()
+        .getMultipleChoiceMultipleSelectionInteractionResult(
+            windowModality, title, message, positiveDecisionText, cancelDecisionText, choices);
   }
 
   private InteractionResultProvider delegate() {
     if (InteractionContext.isStateReplay()) {
       return replayProvider;
     }
-    if (ServerInteractionResultProvider.isAsyncContext() || taskRegistry.hasActivePropagationTask()) {
+    if (ServerInteractionResultProvider.isAsyncContext()
+        || taskRegistry.hasActivePropagationTask()) {
       return asyncProvider;
     }
     return syncProvider;

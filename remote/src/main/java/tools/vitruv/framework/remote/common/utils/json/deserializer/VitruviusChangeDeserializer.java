@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 import tools.vitruv.change.atomic.EChange;
 import tools.vitruv.change.atomic.hid.HierarchicalId;
 import tools.vitruv.change.composite.description.TransactionalChange;
@@ -17,13 +20,7 @@ import tools.vitruv.framework.remote.common.utils.json.IdTransformation;
 import tools.vitruv.framework.remote.common.utils.json.JsonFieldName;
 import tools.vitruv.framework.remote.common.utils.json.JsonMapper;
 
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-
-/**
- * A deserializer for {@link VitruviusChange}.
- */
+/** A deserializer for {@link VitruviusChange}. */
 public class VitruviusChangeDeserializer extends JsonDeserializer<VitruviusChange<?>> {
   private final IdTransformation transformation;
   private final JsonMapper mapper;
@@ -31,7 +28,7 @@ public class VitruviusChangeDeserializer extends JsonDeserializer<VitruviusChang
   /**
    * Creates a new VitruviusChangeDeserializer.
    *
-   * @param mapper         the json mapper to be used
+   * @param mapper the json mapper to be used
    * @param transformation the id transformation to be used
    */
   public VitruviusChangeDeserializer(JsonMapper mapper, IdTransformation transformation) {

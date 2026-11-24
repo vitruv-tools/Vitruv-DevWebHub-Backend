@@ -1,10 +1,9 @@
 package tools.vitruv.framework.remote.modules.vsums.usecases;
 
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import tools.vitruv.framework.remote.modules.vsums.usecases.strategies.UseCasesStrategySelector;
-
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor

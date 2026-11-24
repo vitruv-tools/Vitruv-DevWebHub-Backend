@@ -1,6 +1,9 @@
 package tools.vitruv.framework.remote.modules.vsums.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
 import lombok.val;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -10,111 +13,108 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.vitruv.framework.remote.helper.IntegrationTest;
 import tools.vitruv.framework.remote.modules.vsums.async.AsyncTaskState;
 
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /** Link insert under System prompts for communication speed. */
 @IntegrationTest
 @Tag("systemroot-epic1")
 class SystemRootLinkSpeedInteractionPropagationTest {
 
-    @Autowired
-    private MockMvc mvc;
+  @Autowired private MockMvc mvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+  @Autowired private ObjectMapper objectMapper;
 
-    private tools.vitruv.framework.remote.modules.vsums.controller.SystemRootInteractionPropagationTestSupport support;
+  private tools.vitruv.framework.remote.modules.vsums.controller
+          .SystemRootInteractionPropagationTestSupport
+      support;
 
-    @BeforeEach
-    void setUp() {
-        support = new tools.vitruv.framework.remote.modules.vsums.controller.SystemRootInteractionPropagationTestSupport(mvc, objectMapper);
-    }
+  @BeforeEach
+  void setUp() {
+    support =
+        new tools.vitruv.framework.remote.modules.vsums.controller
+            .SystemRootInteractionPropagationTestSupport(mvc, objectMapper);
+  }
 
-    @Test
-    void systemLinkInsertPromptsForSpeedInMBitsPerSecond() throws Exception {
-        val vsumId = support.createVsum("Link Speed Interaction Test");
-        val openedView = support.openViewWithSystem(vsumId);
+  @Test
+  void systemLinkInsertPromptsForSpeedInMBitsPerSecond() throws Exception {
+    val vsumId = support.createVsum("Link Speed Interaction Test");
+    val openedView = support.openViewWithSystem(vsumId);
 
-        val linkInsertBody = """
-                [
-                  {
-                    "uri": "%s",
-                    "content": {
-                      "eClass": "http://vitruv.tools/methodologisttemplate/model#//System",
-                      "_id": "/",
-                      "links": [
-                        { }
-                      ]
-                    }
-                  }
-                ]
-                """.formatted(openedView.systemUri());
+    val linkInsertBody =
+        """
+        [
+          {
+            "uri": "%s",
+            "content": {
+              "eClass": "http://vitruv.tools/methodologisttemplate/model#//System",
+              "_id": "/",
+              "links": [
+                { }
+              ]
+            }
+          }
+        ]
+        """
+            .formatted(openedView.systemUri());
 
-        val taskId = support.startAsyncUpdate(openedView.viewId(), linkInsertBody);
+    val taskId = support.startAsyncUpdate(openedView.viewId(), linkInsertBody);
 
-        val waitingStatus = support.pollUntilState(taskId, AsyncTaskState.WAITING_USER_INTERACTION);
-        assertThat(String.valueOf(waitingStatus.interaction().get("eClass")))
-                .contains("FreeTextUserInteraction");
-        assertThat(waitingStatus.interaction().get("message"))
-                .asString()
-                .contains("MBits/s");
+    val waitingStatus = support.pollUntilState(taskId, AsyncTaskState.WAITING_USER_INTERACTION);
+    assertThat(String.valueOf(waitingStatus.interaction().get("eClass")))
+        .contains("FreeTextUserInteraction");
+    assertThat(waitingStatus.interaction().get("message")).asString().contains("MBits/s");
 
-        val completed = support.submitInteractionAndWaitForCompletion(
-                taskId,
-                waitingStatus.interaction(),
-                Map.of("text", "1000"));
+    val completed =
+        support.submitInteractionAndWaitForCompletion(
+            taskId, waitingStatus.interaction(), Map.of("text", "1000"));
 
-        assertThat(completed.result()).contains("1000");
-        assertThat(completed.result()).contains("speedMBitsPerSecond");
-    }
+    assertThat(completed.result()).contains("1000");
+    assertThat(completed.result()).contains("speedMBitsPerSecond");
+  }
 
-    @Test
-    void invalidSpeedShowsValidationErrorAndAllowsRetry() throws Exception {
-        val vsumId = support.createVsum("Link Speed Validation Retry Test");
-        val openedView = support.openViewWithSystem(vsumId);
+  @Test
+  void invalidSpeedShowsValidationErrorAndAllowsRetry() throws Exception {
+    val vsumId = support.createVsum("Link Speed Validation Retry Test");
+    val openedView = support.openViewWithSystem(vsumId);
 
-        val linkInsertBody = """
-                [
-                  {
-                    "uri": "%s",
-                    "content": {
-                      "eClass": "http://vitruv.tools/methodologisttemplate/model#//System",
-                      "_id": "/",
-                      "links": [
-                        { }
-                      ]
-                    }
-                  }
-                ]
-                """.formatted(openedView.systemUri());
+    val linkInsertBody =
+        """
+        [
+          {
+            "uri": "%s",
+            "content": {
+              "eClass": "http://vitruv.tools/methodologisttemplate/model#//System",
+              "_id": "/",
+              "links": [
+                { }
+              ]
+            }
+          }
+        ]
+        """
+            .formatted(openedView.systemUri());
 
-        val taskId = support.startAsyncUpdate(openedView.viewId(), linkInsertBody);
+    val taskId = support.startAsyncUpdate(openedView.viewId(), linkInsertBody);
 
-        val waitingStatus = support.pollUntilState(taskId, AsyncTaskState.WAITING_USER_INTERACTION);
-        assertThat(String.valueOf(waitingStatus.interaction().get("eClass")))
-                .contains("FreeTextUserInteraction");
+    val waitingStatus = support.pollUntilState(taskId, AsyncTaskState.WAITING_USER_INTERACTION);
+    assertThat(String.valueOf(waitingStatus.interaction().get("eClass")))
+        .contains("FreeTextUserInteraction");
 
-        val retryStatus = support.submitInteraction(
-                taskId,
-                waitingStatus.interaction(),
-                Map.of("text", "not-a-number"));
+    val retryStatus =
+        support.submitInteraction(
+            taskId, waitingStatus.interaction(), Map.of("text", "not-a-number"));
 
-        assertThat(retryStatus.state()).isEqualTo(AsyncTaskState.WAITING_USER_INTERACTION);
-        assertThat(retryStatus.interaction()).isNotNull();
-        assertThat(retryStatus.interaction().get("validationError"))
-                .asString()
-                .containsIgnoringCase("positive integer");
-        assertThat(String.valueOf(retryStatus.interaction().get("eClass")))
-                .contains("FreeTextUserInteraction");
+    assertThat(retryStatus.state()).isEqualTo(AsyncTaskState.WAITING_USER_INTERACTION);
+    assertThat(retryStatus.interaction()).isNotNull();
+    assertThat(retryStatus.interaction().get("validationError"))
+        .asString()
+        .containsIgnoringCase("positive integer");
+    assertThat(String.valueOf(retryStatus.interaction().get("eClass")))
+        .contains("FreeTextUserInteraction");
 
-        val completed = support.submitInteractionAndWaitForCompletion(
-                taskId,
-                retryStatus.interaction(),
-                Map.of("text", "1000"));
+    val completed =
+        support.submitInteractionAndWaitForCompletion(
+            taskId, retryStatus.interaction(), Map.of("text", "1000"));
 
-        assertThat(completed.result()).contains("1000");
-        assertThat(completed.result()).contains("speedMBitsPerSecond");
-    }
+    assertThat(completed.result()).contains("1000");
+    assertThat(completed.result()).contains("speedMBitsPerSecond");
+  }
 }

@@ -1,7 +1,11 @@
 package tools.vitruv.methodologisttemplate.vsum;
 
-import vitruv.tools.framework.remote.vsumprovider.VirtualModelInitializer;
-import vitruv.tools.framework.remote.vsumprovider.VsumProvider;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Consumer;
 import mir.reactions.model2Model2.Model2Model2ChangePropagationSpecification;
 import mir.reactions.model2ToModel.Model2ToModelChangePropagationSpecification;
 import org.eclipse.emf.common.util.URI;
@@ -24,25 +28,21 @@ import tools.vitruv.methodologisttemplate.model.model.System;
 import tools.vitruv.methodologisttemplate.model.model.impl.ModelFactoryImpl;
 import tools.vitruv.methodologisttemplate.model.model2.Model2Factory;
 import tools.vitruv.methodologisttemplate.model.model2.Root;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Collection;
-import java.util.List;
-import java.util.function.Consumer;
+import vitruv.tools.framework.remote.vsumprovider.VirtualModelInitializer;
+import vitruv.tools.framework.remote.vsumprovider.VsumProvider;
 
 /**
- * VSUM provider for metamodel {@code SystemRootVsum} (Methodologist Template {@code model} + {@code model2}).
+ * VSUM provider for metamodel {@code SystemRootVsum} (Methodologist Template {@code model} + {@code
+ * model2}).
  *
  * <ul>
- *   <li>{@code Entity} in {@code Root} (model2): component type dialog</li>
- *   <li>{@code Link} in {@code Root} (model2): protocol selection or new protocol text input</li>
- *   <li>{@code Link} in {@code System} (model): speed text input in MBits/s</li>
+ *   <li>{@code Entity} in {@code Root} (model2): component type dialog
+ *   <li>{@code Link} in {@code Root} (model2): protocol selection or new protocol text input
+ *   <li>{@code Link} in {@code System} (model): speed text input in MBits/s
  * </ul>
  *
- * <p>{@link #fixRootInStorage} keeps Root under the VSUM storage folder when reactions persist
- * with a project-relative path.
+ * <p>{@link #fixRootInStorage} keeps Root under the VSUM storage folder when reactions persist with
+ * a project-relative path.
  */
 public class SystemRootVsumProvider implements VsumProvider {
   @Override
@@ -52,11 +52,15 @@ public class SystemRootVsumProvider implements VsumProvider {
 
   @Override
   public VirtualModelInitializer getInitializer(Path storagePath) {
-    return getInitializer(storagePath, new TestUserInteraction.ResultProvider(new TestUserInteraction()));
+    return getInitializer(
+        storagePath, new TestUserInteraction.ResultProvider(new TestUserInteraction()));
   }
 
-  public VirtualModelInitializer getInitializer(Path storagePath, InteractionResultProvider interactionResultProvider) {
-    Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put("*", new XMIResourceFactoryImpl());
+  public VirtualModelInitializer getInitializer(
+      Path storagePath, InteractionResultProvider interactionResultProvider) {
+    Resource.Factory.Registry.INSTANCE
+        .getExtensionToFactoryMap()
+        .put("*", new XMIResourceFactoryImpl());
 
     return () -> {
       repairIncompleteModelPair(storagePath);
@@ -73,10 +77,10 @@ public class SystemRootVsumProvider implements VsumProvider {
   }
 
   /**
-   * SystemRoot needs both {@code example.model} (System) and {@code example.model2} (Root).
-   * If only one remains, correspondence metadata still points at the missing file and load fails
-   * with {@code no EObject could be found for ID: .../example.model(2)#/...}. Wipe the incomplete
-   * pair + consistency metadata so {@link #addSystem} can re-seed cleanly.
+   * SystemRoot needs both {@code example.model} (System) and {@code example.model2} (Root). If only
+   * one remains, correspondence metadata still points at the missing file and load fails with
+   * {@code no EObject could be found for ID: .../example.model(2)#/...}. Wipe the incomplete pair +
+   * consistency metadata so {@link #addSystem} can re-seed cleanly.
    */
   private static void repairIncompleteModelPair(Path projectPath) {
     Path model = projectPath.resolve("example.model");
@@ -107,27 +111,29 @@ public class SystemRootVsumProvider implements VsumProvider {
       return;
     }
     try (var walk = Files.walk(dir)) {
-      walk.sorted((a, b) -> b.compareTo(a)).forEach(p -> {
-        try {
-          Files.deleteIfExists(p);
-        } catch (IOException ignored) {
-          // best-effort
-        }
-      });
+      walk.sorted((a, b) -> b.compareTo(a))
+          .forEach(
+              p -> {
+                try {
+                  Files.deleteIfExists(p);
+                } catch (IOException ignored) {
+                  // best-effort
+                }
+              });
     } catch (IOException ignored) {
       // best-effort
     }
   }
 
-  /**
-   * Creates model2 {@link Root} at {@code example.model2} when System exists but Root does not.
-   */
+  /** Creates model2 {@link Root} at {@code example.model2} when System exists but Root does not. */
   private static void ensureRootExists(InternalVirtualModel vsum, Path projectPath) {
     System system = null;
     Root root = null;
 
-    var selector = vsum.createSelector(
-        ViewTypeFactory.createIdentityMappingViewType("default", ModelFactoryImpl.init().getModelPackage()));
+    var selector =
+        vsum.createSelector(
+            ViewTypeFactory.createIdentityMappingViewType(
+                "default", ModelFactoryImpl.init().getModelPackage()));
     for (EObject element : selector.getSelectableElements()) {
       if (element instanceof System s) {
         system = s;
@@ -170,14 +176,17 @@ public class SystemRootVsumProvider implements VsumProvider {
     tools.vitruv.change.correspondence.CorrespondencePackage.eINSTANCE.eClass();
 
     try {
-      InternalVirtualModel model = new VirtualModelBuilder()
-          .withStorageFolder(projectPath)
-          .withUserInteractorForResultProvider(interactionResultProvider)
-          .withChangePropagationSpecifications(
-              new Model2Model2ChangePropagationSpecification(),
-              new Model2ToModelChangePropagationSpecification())
-          .withViewType(ViewTypeFactory.createIdentityMappingViewType("default", ModelFactoryImpl.init().getModelPackage()))
-          .buildAndInitialize();
+      InternalVirtualModel model =
+          new VirtualModelBuilder()
+              .withStorageFolder(projectPath)
+              .withUserInteractorForResultProvider(interactionResultProvider)
+              .withChangePropagationSpecifications(
+                  new Model2Model2ChangePropagationSpecification(),
+                  new Model2ToModelChangePropagationSpecification())
+              .withViewType(
+                  ViewTypeFactory.createIdentityMappingViewType(
+                      "default", ModelFactoryImpl.init().getModelPackage()))
+              .buildAndInitialize();
       model.setChangePropagationMode(ChangePropagationMode.TRANSITIVE_CYCLIC);
       return model;
     } catch (IOException e) {
@@ -186,14 +195,18 @@ public class SystemRootVsumProvider implements VsumProvider {
   }
 
   private static View getDefaultView(VirtualModel vsum, Collection<Class<?>> rootTypes) {
-    var selector = vsum.createSelector(ViewTypeFactory.createIdentityMappingViewType("default", ModelFactoryImpl.init().getModelPackage()));
+    var selector =
+        vsum.createSelector(
+            ViewTypeFactory.createIdentityMappingViewType(
+                "default", ModelFactoryImpl.init().getModelPackage()));
     selector.getSelectableElements().stream()
         .filter(element -> rootTypes.stream().anyMatch(it -> it.isInstance(element)))
         .forEach(it -> selector.setSelected(it, true));
     return selector.createView();
   }
 
-  private static void modifyView(CommittableView view, Consumer<CommittableView> modificationFunction) {
+  private static void modifyView(
+      CommittableView view, Consumer<CommittableView> modificationFunction) {
     modificationFunction.accept(view);
     view.commitChanges();
   }
@@ -207,15 +220,17 @@ public class SystemRootVsumProvider implements VsumProvider {
   }
 
   /**
-   * Relocates model2 Root into {@code projectPath/example.model2} when needed,
-   * preserving entities, links, and System↔Root correspondences.
+   * Relocates model2 Root into {@code projectPath/example.model2} when needed, preserving entities,
+   * links, and System↔Root correspondences.
    */
   private static void fixRootInStorage(InternalVirtualModel vsum, Path projectPath) {
     System system = null;
     Root root = null;
 
-    var selector = vsum.createSelector(
-        ViewTypeFactory.createIdentityMappingViewType("default", ModelFactoryImpl.init().getModelPackage()));
+    var selector =
+        vsum.createSelector(
+            ViewTypeFactory.createIdentityMappingViewType(
+                "default", ModelFactoryImpl.init().getModelPackage()));
     for (EObject element : selector.getSelectableElements()) {
       if (element instanceof System s) {
         system = s;
@@ -269,8 +284,10 @@ public class SystemRootVsumProvider implements VsumProvider {
     System system = null;
     Root root = null;
 
-    var selector = vsum.createSelector(
-        ViewTypeFactory.createIdentityMappingViewType("default", ModelFactoryImpl.init().getModelPackage()));
+    var selector =
+        vsum.createSelector(
+            ViewTypeFactory.createIdentityMappingViewType(
+                "default", ModelFactoryImpl.init().getModelPackage()));
     for (EObject element : selector.getSelectableElements()) {
       if (element instanceof System s) {
         system = s;
@@ -284,8 +301,9 @@ public class SystemRootVsumProvider implements VsumProvider {
     }
 
     var correspondenceModel = vsum.getCorrespondenceModel();
-    boolean rootHasSystem = correspondenceModel.getCorrespondingEObjects(root).stream()
-        .anyMatch(System.class::isInstance);
+    boolean rootHasSystem =
+        correspondenceModel.getCorrespondingEObjects(root).stream()
+            .anyMatch(System.class::isInstance);
     if (!rootHasSystem) {
       correspondenceModel.addCorrespondenceBetween(system, root, "");
       correspondenceModel.addCorrespondenceBetween(root, system, "");

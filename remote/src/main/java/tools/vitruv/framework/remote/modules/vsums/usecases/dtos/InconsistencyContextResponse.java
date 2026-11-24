@@ -3,9 +3,7 @@ package tools.vitruv.framework.remote.modules.vsums.usecases.dtos;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Model/correspondence snapshot for an inconsistency (Epic 2 visualization).
- */
+/** Model/correspondence snapshot for an inconsistency (Epic 2 visualization). */
 public record InconsistencyContextResponse(
     UUID inconsistencyId,
     UUID vsumId,
@@ -14,8 +12,7 @@ public record InconsistencyContextResponse(
     String viewTypeName,
     String note,
     List<ModelElementNode> elements,
-    List<CorrespondenceEdge> correspondences
-) {
+    List<CorrespondenceEdge> correspondences) {
   public record ModelElementNode(
       String id,
       String displayName,
@@ -23,15 +20,8 @@ public record InconsistencyContextResponse(
       String metamodelName,
       String uri,
       String role,
-      String parentId
-  ) {
-  }
+      String parentId) {}
 
   public record CorrespondenceEdge(
-      String sourceId,
-      String targetId,
-      String sourceLabel,
-      String targetLabel
-  ) {
-  }
+      String sourceId, String targetId, String sourceLabel, String targetLabel) {}
 }

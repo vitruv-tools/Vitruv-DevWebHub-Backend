@@ -1,5 +1,9 @@
 package tools.vitruv.framework.remote.modules.vsums.async;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import tools.vitruv.change.interaction.*;
@@ -7,14 +11,9 @@ import tools.vitruv.change.interaction.UserInteractionOptions.InputValidator;
 import tools.vitruv.change.interaction.UserInteractionOptions.NotificationType;
 import tools.vitruv.change.interaction.UserInteractionOptions.WindowModality;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
 /**
- * Bridges Vitruv user interactions to the async propagation task registry.
- * Used during async {@code view.update()} so the client can respond via REST.
+ * Bridges Vitruv user interactions to the async propagation task registry. Used during async {@code
+ * view.update()} so the client can respond via REST.
  */
 @Component
 @RequiredArgsConstructor
@@ -65,7 +64,8 @@ public class ServerInteractionResultProvider implements InteractionResultProvide
       String cancelDecisionText) {
     AsyncTaskStatus taskStatus = getTaskStatus();
 
-    ConfirmationUserInteraction interaction = InteractionFactory.eINSTANCE.createConfirmationUserInteraction();
+    ConfirmationUserInteraction interaction =
+        InteractionFactory.eINSTANCE.createConfirmationUserInteraction();
     interaction.setMessage(message);
     taskStatus.setWaitingForInteraction(interaction);
 
@@ -87,7 +87,8 @@ public class ServerInteractionResultProvider implements InteractionResultProvide
       NotificationType notificationType) {
     AsyncTaskStatus taskStatus = getTaskStatus();
 
-    NotificationUserInteraction interaction = InteractionFactory.eINSTANCE.createNotificationUserInteraction();
+    NotificationUserInteraction interaction =
+        InteractionFactory.eINSTANCE.createNotificationUserInteraction();
     interaction.setMessage(message);
     taskStatus.setWaitingForInteraction(interaction);
 
@@ -112,7 +113,8 @@ public class ServerInteractionResultProvider implements InteractionResultProvide
     taskStatus.clearValidationError();
 
     while (true) {
-      FreeTextUserInteraction interaction = InteractionFactory.eINSTANCE.createFreeTextUserInteraction();
+      FreeTextUserInteraction interaction =
+          InteractionFactory.eINSTANCE.createFreeTextUserInteraction();
       interaction.setMessage(promptMessage);
       taskStatus.setWaitingForInteraction(interaction);
 
@@ -158,7 +160,8 @@ public class ServerInteractionResultProvider implements InteractionResultProvide
     taskStatus.setWaitingForInteraction(interaction);
 
     try {
-      MultipleChoiceSingleSelectionUserInteraction response = taskStatus.waitForInteractionResponse();
+      MultipleChoiceSingleSelectionUserInteraction response =
+          taskStatus.waitForInteractionResponse();
       return response.getSelectedIndex();
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
@@ -185,7 +188,8 @@ public class ServerInteractionResultProvider implements InteractionResultProvide
     taskStatus.setWaitingForInteraction(interaction);
 
     try {
-      MultipleChoiceMultiSelectionUserInteraction response = taskStatus.waitForInteractionResponse();
+      MultipleChoiceMultiSelectionUserInteraction response =
+          taskStatus.waitForInteractionResponse();
       return response.getSelectedIndices();
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();

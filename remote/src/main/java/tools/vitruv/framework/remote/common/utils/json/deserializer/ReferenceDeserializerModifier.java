@@ -8,9 +8,7 @@ import com.fasterxml.jackson.databind.type.ReferenceType;
 import org.eclipse.emfcloud.jackson.databind.deser.EcoreReferenceDeserializer;
 import tools.vitruv.framework.remote.common.utils.json.IdTransformation;
 
-/**
- * A {@link BeanDeserializerModifier} that modifies reference deserializers to use.
- */
+/** A {@link BeanDeserializerModifier} that modifies reference deserializers to use. */
 public class ReferenceDeserializerModifier extends BeanDeserializerModifier {
   private final transient IdTransformation transformation;
 

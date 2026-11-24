@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import java.io.IOException;
+import java.util.Map;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import tools.vitruv.framework.remote.common.utils.ResourceUtils;
@@ -11,12 +13,7 @@ import tools.vitruv.framework.remote.common.utils.json.IdTransformation;
 import tools.vitruv.framework.remote.common.utils.json.JsonFieldName;
 import tools.vitruv.framework.remote.common.utils.json.JsonMapper;
 
-import java.io.IOException;
-import java.util.Map;
-
-/**
- * A deserializer for {@link ResourceSet}.
- */
+/** A deserializer for {@link ResourceSet}. */
 public class ResourceSetDeserializer extends JsonDeserializer<ResourceSet> {
   private final IdTransformation transformation;
   private final JsonMapper mapper;
@@ -24,7 +21,7 @@ public class ResourceSetDeserializer extends JsonDeserializer<ResourceSet> {
   /**
    * Creates a new ResourceSetDeserializer.
    *
-   * @param mapper         The json mapper to be used.
+   * @param mapper The json mapper to be used.
    * @param transformation the id transformation to be used
    */
   public ResourceSetDeserializer(JsonMapper mapper, IdTransformation transformation) {

@@ -4,21 +4,13 @@ import tools.vitruv.change.composite.description.CompositeChange;
 import tools.vitruv.change.composite.description.TransactionalChange;
 import tools.vitruv.change.composite.description.VitruviusChange;
 
-/**
- * An enumeration representing different types of Vitruvius changes.
- */
+/** An enumeration representing different types of Vitruvius changes. */
 public enum ChangeType {
-  /**
-   * Transaltional change type.
-   */
+  /** Transaltional change type. */
   TRANSACTIONAL,
-  /**
-   * Composite change type.
-   */
+  /** Composite change type. */
   COMPOSITE,
-  /**
-   * Unknown change type.
-   */
+  /** Unknown change type. */
   UNKNOWN;
 
   /**

@@ -3,6 +3,7 @@ package tools.vitruv.framework.remote.common.utils.json.serializer;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import java.io.IOException;
 import org.eclipse.emf.common.util.URI;
 import tools.vitruv.change.composite.description.CompositeChange;
 import tools.vitruv.change.composite.description.TransactionalChange;
@@ -11,11 +12,7 @@ import tools.vitruv.framework.remote.common.utils.ResourceUtils;
 import tools.vitruv.framework.remote.common.utils.json.ChangeType;
 import tools.vitruv.framework.remote.common.utils.json.JsonFieldName;
 
-import java.io.IOException;
-
-/**
- * A serializer for {@link VitruviusChange}.
- */
+/** A serializer for {@link VitruviusChange}. */
 @SuppressWarnings("rawtypes")
 public class VitruviusChangeSerializer extends JsonSerializer<VitruviusChange> {
   @Override

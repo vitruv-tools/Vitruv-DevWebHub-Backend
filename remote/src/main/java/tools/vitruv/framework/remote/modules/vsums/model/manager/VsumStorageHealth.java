@@ -9,20 +9,20 @@ import java.util.Locale;
 import java.util.stream.Stream;
 
 /**
- * Detects VSUM storage that Vitruv cannot load as XMI, typically JSON written into {@code example.model},
- * or an incomplete {@code example.model} / {@code example.model2} pair (SystemRoot / AmaltheaAscet).
+ * Detects VSUM storage that Vitruv cannot load as XMI, typically JSON written into {@code
+ * example.model}, or an incomplete {@code example.model} / {@code example.model2} pair (SystemRoot
+ * / AmaltheaAscet).
  */
 public final class VsumStorageHealth {
 
   private static final String MODEL_FILE = "example.model";
   private static final String MODEL2_FILE = "example.model2";
 
-  private VsumStorageHealth() {
-  }
+  private VsumStorageHealth() {}
 
   /**
-   * SystemRoot and AmaltheaAscet need both model files. If only one exists, correspondences point at
-   * a missing resource and the UI shows dangling EMF proxies.
+   * SystemRoot and AmaltheaAscet need both model files. If only one exists, correspondences point
+   * at a missing resource and the UI shows dangling EMF proxies.
    */
   public static boolean hasIncompleteModelPair(Path storagePath) {
     if (storagePath == null || !Files.isDirectory(storagePath)) {

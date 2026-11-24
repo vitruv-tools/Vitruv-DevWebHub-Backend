@@ -7,6 +7,4 @@ public record VsumProperties(
     String vsumProvidersDir,
     String vsumProviderJar,
     String vsumProviderLibDirName,
-    String vsumStorageDir
-) {
-}
+    String vsumStorageDir) {}

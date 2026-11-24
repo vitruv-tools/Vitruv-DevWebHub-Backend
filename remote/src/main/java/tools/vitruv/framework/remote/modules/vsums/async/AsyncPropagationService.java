@@ -1,5 +1,7 @@
 package tools.vitruv.framework.remote.modules.vsums.async;
 
+import java.util.UUID;
+import java.util.concurrent.Executor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -9,9 +11,6 @@ import tools.vitruv.framework.remote.modules.vsums.model.manager.VsumManager;
 import tools.vitruv.framework.remote.modules.vsums.model.services.ViewService;
 import tools.vitruv.framework.remote.modules.vsums.model.wrapper.ViewWrapper;
 import tools.vitruv.framework.remote.modules.vsums.usecases.InconsistencyUseCases;
-
-import java.util.UUID;
-import java.util.concurrent.Executor;
 
 @Service
 public class AsyncPropagationService {
@@ -104,7 +103,8 @@ public class AsyncPropagationService {
       String message = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
       taskRegistry.failTask(taskId, message);
       inconsistencyUseCases.markFailedByTaskId(taskId, message);
-      // "This recorder is already recording" and other mid-commit failures stick the VSUM in memory.
+      // "This recorder is already recording" and other mid-commit failures stick the VSUM in
+      // memory.
       if (message.contains("already recording") || message.contains("Changes rejected")) {
         vsumManager.evictVsum(viewWrapper.vsumWrapper().info().getId());
       }

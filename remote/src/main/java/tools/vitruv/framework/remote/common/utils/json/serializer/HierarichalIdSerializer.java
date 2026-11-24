@@ -3,17 +3,14 @@ package tools.vitruv.framework.remote.common.utils.json.serializer;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import java.io.IOException;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emfcloud.jackson.databind.ser.EcoreReferenceSerializer;
 import tools.vitruv.change.atomic.hid.HierarchicalId;
 import tools.vitruv.framework.remote.common.utils.json.IdTransformation;
 
-import java.io.IOException;
-
-/**
- * A serializer for {@link HierarchicalId}.
- */
+/** A serializer for {@link HierarchicalId}. */
 public class HierarichalIdSerializer extends JsonSerializer<EObject> {
   private final EcoreReferenceSerializer standardSerializer;
   private final IdTransformation transformation;
@@ -22,7 +19,7 @@ public class HierarichalIdSerializer extends JsonSerializer<EObject> {
    * Creates a new HierarichalIdSerializer.
    *
    * @param standardDeserializer the standard deserializer
-   * @param transformation       the id transformation to be used
+   * @param transformation the id transformation to be used
    */
   public HierarichalIdSerializer(
       EcoreReferenceSerializer standardDeserializer, IdTransformation transformation) {

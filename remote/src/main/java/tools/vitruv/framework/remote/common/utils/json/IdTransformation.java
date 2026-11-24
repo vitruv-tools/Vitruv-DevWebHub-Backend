@@ -1,13 +1,12 @@
 package tools.vitruv.framework.remote.common.utils.json;
 
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Set;
 import org.eclipse.emf.common.util.URI;
 import tools.vitruv.change.atomic.EChange;
 import tools.vitruv.change.atomic.hid.HierarchicalId;
 import tools.vitruv.change.atomic.root.RootEChange;
-
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Transforms Vitruv resource URIs between client-local form ({@code /example.model}) and absolute
@@ -15,13 +14,13 @@ import java.util.Set;
  *
  * <p>Uses the VSUM storage folder passed at construction time. Legacy deployments may still send
  * commits with URIs under {@code VitruviusServer/} after {@code persistProjectRelative} misplaced
- * model files; {@link #toLocal} / {@link #toGlobal} normalize known filenames
- * ({@code example.model}, {@code example.model2} — used by SystemRoot and AmaltheaAscet).
+ * model files; {@link #toLocal} / {@link #toGlobal} normalize known filenames ({@code
+ * example.model}, {@code example.model2} — used by SystemRoot and AmaltheaAscet).
  *
- * <p>{@link #toGlobal} resolves known model files via {@link Path#resolve(String)} and
- * {@link URI#createFileURI(String)} on a filesystem path only. Never pass an existing
- * {@code file:} URI string into {@code createFileURI}, or Windows paths like
- * {@code .../file%3A/E:/.../example.model2} result.
+ * <p>{@link #toGlobal} resolves known model files via {@link Path#resolve(String)} and {@link
+ * URI#createFileURI(String)} on a filesystem path only. Never pass an existing {@code file:} URI
+ * string into {@code createFileURI}, or Windows paths like {@code
+ * .../file%3A/E:/.../example.model2} result.
  */
 public class IdTransformation {
   private static final Set<String> KNOWN_MODEL_FILES = Set.of("example.model", "example.model2");

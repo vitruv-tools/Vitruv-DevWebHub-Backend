@@ -4,6 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -18,10 +21,6 @@ import tools.vitruv.framework.remote.common.utils.json.deserializer.VitruviusCha
 import tools.vitruv.framework.remote.common.utils.json.serializer.ReferenceSerializerModifier;
 import tools.vitruv.framework.remote.common.utils.json.serializer.ResourceSetSerializer;
 import tools.vitruv.framework.remote.common.utils.json.serializer.VitruviusChangeSerializer;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
 
 /**
  * This mapper can be used to serialize objects and deserialize JSON in the context of Vitruvius. It
@@ -75,8 +74,8 @@ public class JsonMapper {
   /**
    * Deserializes the given JSON string.
    *
-   * @param <T>   The type of the returned object.
-   * @param json  The JSON to deserialize.
+   * @param <T> The type of the returned object.
+   * @param json The JSON to deserialize.
    * @param clazz The class of the JSON type.
    * @return The object or {@code null} if an {@link JsonProcessingException} occurred.
    */
@@ -87,12 +86,12 @@ public class JsonMapper {
   /**
    * Deserializes the given JSON node.
    *
-   * @param <T>   The type of the returned object.
-   * @param json  The JSON node to deserialize.
+   * @param <T> The type of the returned object.
+   * @param json The JSON node to deserialize.
    * @param clazz The class of the JSON type.
    * @return The object.
    * @throws JsonProcessingException If the JSON node cannot be processed.
-   * @throws IOException             If there is an IO exception during deserialization.
+   * @throws IOException If there is an IO exception during deserialization.
    */
   public <T> T deserialize(JsonNode json, Class<T> clazz)
       throws JsonProcessingException, IOException {
@@ -102,8 +101,8 @@ public class JsonMapper {
   /**
    * Deserializes the given JSON string to a Resource.
    *
-   * @param json      The JSON string representing the Resource.
-   * @param uri       The URI of the Resource.
+   * @param json The JSON string representing the Resource.
+   * @param uri The URI of the Resource.
    * @param parentSet The parent ResourceSet of the Resource.
    * @return The deserialized Resource.
    * @throws JsonProcessingException If an error occurs during deserialization.
@@ -121,7 +120,7 @@ public class JsonMapper {
   /**
    * Deserializes the given JSON array to a list.
    *
-   * @param json  The JSON array to deserialize.
+   * @param json The JSON array to deserialize.
    * @param clazz The class representing the JSON type of the objects in the JSON array.
    * @return The list of objects or {@code null} if an {@link JsonProcessingException} occurred.
    */

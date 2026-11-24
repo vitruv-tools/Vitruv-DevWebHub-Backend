@@ -1,6 +1,10 @@
 package tools.vitruv.framework.remote.modules.vsums.usecases;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.springframework.http.HttpStatus;
@@ -19,11 +23,6 @@ import tools.vitruv.framework.remote.modules.vsums.model.services.ViewService;
 import tools.vitruv.framework.remote.modules.vsums.model.wrapper.ViewWrapper;
 import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.OpenInconsistencyResponse;
 import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.PropagationTaskStatusResponse;
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -46,8 +45,7 @@ public class PropagationTaskUseCases {
 
     if (status.getState() != AsyncTaskState.WAITING_USER_INTERACTION) {
       throw new ResponseStatusException(
-          HttpStatus.CONFLICT,
-          "Task with ID '" + taskId + "' is not waiting for user interaction");
+          HttpStatus.CONFLICT, "Task with ID '" + taskId + "' is not waiting for user interaction");
     }
 
     val viewWrapper = viewManager.getView(status.getViewId());
@@ -57,25 +55,29 @@ public class PropagationTaskUseCases {
 
     UserInteractionBase response;
     try {
-      response = viewWrapper.vsumWrapper().jsonMapper().deserialize(interactionJson, UserInteractionBase.class);
+      response =
+          viewWrapper
+              .vsumWrapper()
+              .jsonMapper()
+              .deserialize(interactionJson, UserInteractionBase.class);
     } catch (JsonProcessingException e) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid interaction JSON: " + e.getMessage());
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Invalid interaction JSON: " + e.getMessage());
     }
 
     status.setInteractionResponse(response);
   }
 
   /**
-   * Parks the waiting task as the single open inconsistency for its VSUM.
-   * Worker stays blocked on the prompt so the hub can resolve it later.
+   * Parks the waiting task as the single open inconsistency for its VSUM. Worker stays blocked on
+   * the prompt so the hub can resolve it later.
    */
   public OpenInconsistencyResponse parkAsInconsistency(UUID taskId) {
     AsyncTaskStatus status = getTaskOrThrow(taskId);
 
     if (status.getState() != AsyncTaskState.WAITING_USER_INTERACTION) {
       throw new ResponseStatusException(
-          HttpStatus.CONFLICT,
-          "Task with ID '" + taskId + "' is not waiting for user interaction");
+          HttpStatus.CONFLICT, "Task with ID '" + taskId + "' is not waiting for user interaction");
     }
 
     ViewWrapper viewWrapper = viewManager.getView(status.getViewId());
@@ -83,23 +85,23 @@ public class PropagationTaskUseCases {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "View not found for task: " + taskId);
     }
 
-    Map<String, Object> interactionPayload = status.getPendingInteraction() != null
-        ? serializeInteraction(status.getPendingInteraction())
-        : Map.of();
+    Map<String, Object> interactionPayload =
+        status.getPendingInteraction() != null
+            ? serializeInteraction(status.getPendingInteraction())
+            : Map.of();
 
-    String message = status.getPendingInteraction() != null
-        ? status.getPendingInteraction().getMessage()
-        : null;
+    String message =
+        status.getPendingInteraction() != null ? status.getPendingInteraction().getMessage() : null;
 
-    OpenInconsistency created = inconsistencyUseCases.createOpen(
-        viewWrapper.vsumWrapper().info().getId(),
-        viewWrapper.vsumWrapper().info().getName(),
-        taskId,
-        status.getViewId(),
-        message != null ? message : "Pending user interaction",
-        message,
-        interactionPayload
-    );
+    OpenInconsistency created =
+        inconsistencyUseCases.createOpen(
+            viewWrapper.vsumWrapper().info().getId(),
+            viewWrapper.vsumWrapper().info().getName(),
+            taskId,
+            status.getViewId(),
+            message != null ? message : "Pending user interaction",
+            message,
+            interactionPayload);
 
     try {
       String encoded = status.getCommittedResourceSet();
@@ -124,7 +126,8 @@ public class PropagationTaskUseCases {
   private AsyncTaskStatus getTaskOrThrow(UUID taskId) {
     AsyncTaskStatus status = taskRegistry.getTaskStatus(taskId);
     if (status == null) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Task with ID '" + taskId + "' not found");
+      throw new ResponseStatusException(
+          HttpStatus.NOT_FOUND, "Task with ID '" + taskId + "' not found");
     }
     return status;
   }
@@ -140,7 +143,8 @@ public class PropagationTaskUseCases {
         if (status.getValidationError() != null) {
           interactionPayload.put("validationError", status.getValidationError());
         }
-      } else if (status.getState() == AsyncTaskState.INCONSISTENT && status.getPendingInteraction() != null) {
+      } else if (status.getState() == AsyncTaskState.INCONSISTENT
+          && status.getPendingInteraction() != null) {
         interactionPayload = serializeInteraction(status.getPendingInteraction());
       }
       if (status.getState() == AsyncTaskState.COMPLETED && status.getResult() != null) {
@@ -156,8 +160,7 @@ public class PropagationTaskUseCases {
         status.getCompletedAt(),
         status.getErrorMessage(),
         interactionPayload,
-        resultJson
-    );
+        resultJson);
   }
 
   private Map<String, Object> serializeInteraction(UserInteractionBase interaction) {

@@ -11,7 +11,8 @@ import tools.vitruv.framework.remote.modules.vsums.model.services.EcoreModelLoad
 
 /**
  * REST controller that provides endpoints for managing and retrieving information about metamodels.
- * It offers methods to list all available metamodels and to fetch Ecore models for a specific metamodel.
+ * It offers methods to list all available metamodels and to fetch Ecore models for a specific
+ * metamodel.
  */
 @RestController
 @RequestMapping("/v1/metamodels")

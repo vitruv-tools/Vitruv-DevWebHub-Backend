@@ -6,7 +6,8 @@ public enum AsyncTaskState {
   COMPLETED,
   FAILED,
   /**
-   * User dismissed a required interaction; worker was unblocked and the task is kept as an inconsistency.
+   * User dismissed a required interaction; worker was unblocked and the task is kept as an
+   * inconsistency.
    */
   INCONSISTENT
 }

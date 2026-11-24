@@ -16,8 +16,8 @@ import tools.vitruv.framework.views.ViewSelector;
 
 /**
  * Annotations on remote committable views are stored on the underlying {@link RemoteView} instead
- * of being forwarded to a newly created trait wrapper (which recursed until a
- * {@link StackOverflowError} or failed on modified views).
+ * of being forwarded to a newly created trait wrapper (which recursed until a {@link
+ * StackOverflowError} or failed on modified views).
  */
 class RemoteViewAnnotationTest {
   private static final String VIEW_UUID = "view-1";
@@ -31,7 +31,9 @@ class RemoteViewAnnotationTest {
     when(connection.isViewOutdated(VIEW_UUID)).thenReturn(false);
 
     var resourceSet = new ResourceSetImpl();
-    resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap()
+    resourceSet
+        .getResourceFactoryRegistry()
+        .getExtensionToFactoryMap()
         .put("*", new XMIResourceFactoryImpl());
 
     remoteView = new RemoteView(VIEW_UUID, resourceSet, mock(ViewSelector.class), connection);

@@ -1,11 +1,10 @@
 package tools.vitruv.framework.remote.modules.vsums.async;
 
+import java.util.Collections;
 import tools.vitruv.change.interaction.InteractionResultProvider;
 import tools.vitruv.change.interaction.UserInteractionOptions.InputValidator;
 import tools.vitruv.change.interaction.UserInteractionOptions.NotificationType;
 import tools.vitruv.change.interaction.UserInteractionOptions.WindowModality;
-
-import java.util.Collections;
 
 /**
  * Answers Vitruv user interactions deterministically while replaying persisted view state.

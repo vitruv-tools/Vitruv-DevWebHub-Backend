@@ -1,18 +1,17 @@
 package tools.vitruv.framework.remote.modules.vsums.model.entities;
 
 import jakarta.persistence.*;
+import java.time.Instant;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import tools.vitruv.framework.remote.common.entities.BaseEntity;
 
-import java.time.Instant;
-import java.util.UUID;
-
 /**
- * At most one {@link OpenInconsistencyState#OPEN} row should exist per VSUM.
- * Created when the editor dismisses a waiting interaction; resolved when that task completes from the hub.
+ * At most one {@link OpenInconsistencyState#OPEN} row should exist per VSUM. Created when the
+ * editor dismisses a waiting interaction; resolved when that task completes from the hub.
  */
 @Entity
 @Table(name = "open-inconsistencies")

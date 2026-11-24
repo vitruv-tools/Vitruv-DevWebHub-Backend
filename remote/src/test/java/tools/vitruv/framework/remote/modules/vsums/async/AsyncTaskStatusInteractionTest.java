@@ -1,150 +1,165 @@
 package tools.vitruv.framework.remote.modules.vsums.async;
 
-import org.junit.jupiter.api.Test;
-import tools.vitruv.change.interaction.ConfirmationUserInteraction;
-import tools.vitruv.change.interaction.InteractionFactory;
-import tools.vitruv.framework.remote.modules.vsums.async.AsyncTaskState;
-import tools.vitruv.framework.remote.modules.vsums.async.AsyncTaskStatus;
-import tools.vitruv.framework.remote.modules.vsums.async.PropagationInconsistentException;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
+import tools.vitruv.change.interaction.ConfirmationUserInteraction;
+import tools.vitruv.change.interaction.InteractionFactory;
 
 class AsyncTaskStatusInteractionTest {
 
-    @Test
-    void setInteractionResponseLeavesWaitingStateBeforeWorkerWakesUp() throws Exception {
-        AsyncTaskStatus status = new AsyncTaskStatus(UUID.randomUUID(), UUID.randomUUID());
+  @Test
+  void setInteractionResponseLeavesWaitingStateBeforeWorkerWakesUp() throws Exception {
+    AsyncTaskStatus status = new AsyncTaskStatus(UUID.randomUUID(), UUID.randomUUID());
 
-        ConfirmationUserInteraction pending = InteractionFactory.eINSTANCE.createConfirmationUserInteraction();
-        pending.setMessage("Proceed?");
-        status.setWaitingForInteraction(pending);
+    ConfirmationUserInteraction pending =
+        InteractionFactory.eINSTANCE.createConfirmationUserInteraction();
+    pending.setMessage("Proceed?");
+    status.setWaitingForInteraction(pending);
 
-        ConfirmationUserInteraction response = InteractionFactory.eINSTANCE.createConfirmationUserInteraction();
-        response.setConfirmed(true);
-        status.setInteractionResponse(response);
+    ConfirmationUserInteraction response =
+        InteractionFactory.eINSTANCE.createConfirmationUserInteraction();
+    response.setConfirmed(true);
+    status.setInteractionResponse(response);
 
-        // No worker has consumed the answer yet; pollers must not see the answered prompt as pending.
-        assertThat(status.getState()).isEqualTo(AsyncTaskState.RUNNING);
-        assertThat(status.isWaitingForUserInteraction()).isFalse();
+    // No worker has consumed the answer yet; pollers must not see the answered prompt as pending.
+    assertThat(status.getState()).isEqualTo(AsyncTaskState.RUNNING);
+    assertThat(status.isWaitingForUserInteraction()).isFalse();
 
-        ConfirmationUserInteraction consumed = status.waitForInteractionResponse();
-        assertThat(consumed.isConfirmed()).isTrue();
-        assertThat(status.getPendingInteraction()).isNull();
-    }
+    ConfirmationUserInteraction consumed = status.waitForInteractionResponse();
+    assertThat(consumed.isConfirmed()).isTrue();
+    assertThat(status.getPendingInteraction()).isNull();
+  }
 
-    @Test
-    void waitForInteractionResponseUnblocksAfterSetInteractionResponse() throws Exception {
-        AsyncTaskStatus status = new AsyncTaskStatus(UUID.randomUUID(), UUID.randomUUID());
+  @Test
+  void waitForInteractionResponseUnblocksAfterSetInteractionResponse() throws Exception {
+    AsyncTaskStatus status = new AsyncTaskStatus(UUID.randomUUID(), UUID.randomUUID());
 
-        ConfirmationUserInteraction pending = InteractionFactory.eINSTANCE.createConfirmationUserInteraction();
-        pending.setMessage("Proceed?");
-        status.setWaitingForInteraction(pending);
+    ConfirmationUserInteraction pending =
+        InteractionFactory.eINSTANCE.createConfirmationUserInteraction();
+    pending.setMessage("Proceed?");
+    status.setWaitingForInteraction(pending);
 
-        ConfirmationUserInteraction[] workerResult = new ConfirmationUserInteraction[1];
-        Thread worker = new Thread(() -> {
-            try {
+    ConfirmationUserInteraction[] workerResult = new ConfirmationUserInteraction[1];
+    Thread worker =
+        new Thread(
+            () -> {
+              try {
                 workerResult[0] = status.waitForInteractionResponse();
-            } catch (InterruptedException e) {
+              } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new RuntimeException(e);
-            }
-        });
-        worker.start();
+              }
+            });
+    worker.start();
 
-        for (int attempt = 0; attempt < 20 && status.getState() != AsyncTaskState.WAITING_USER_INTERACTION; attempt++) {
-            TimeUnit.MILLISECONDS.sleep(10);
-        }
-        assertThat(status.getState()).isEqualTo(AsyncTaskState.WAITING_USER_INTERACTION);
-
-        ConfirmationUserInteraction response = InteractionFactory.eINSTANCE.createConfirmationUserInteraction();
-        response.setMessage("Proceed?");
-        response.setConfirmed(true);
-        status.setInteractionResponse(response);
-
-        worker.join(2_000);
-        assertThat(worker.isAlive()).isFalse();
-        assertThat(workerResult[0].isConfirmed()).isTrue();
-        assertThat(status.getState()).isEqualTo(AsyncTaskState.RUNNING);
-        assertThat(status.getPendingInteraction()).isNull();
+    for (int attempt = 0;
+        attempt < 20 && status.getState() != AsyncTaskState.WAITING_USER_INTERACTION;
+        attempt++) {
+      TimeUnit.MILLISECONDS.sleep(10);
     }
+    assertThat(status.getState()).isEqualTo(AsyncTaskState.WAITING_USER_INTERACTION);
 
-    @Test
-    void parkAsInconsistencyKeepsWorkerWaiting() throws Exception {
-        AsyncTaskStatus status = new AsyncTaskStatus(UUID.randomUUID(), UUID.randomUUID());
+    ConfirmationUserInteraction response =
+        InteractionFactory.eINSTANCE.createConfirmationUserInteraction();
+    response.setMessage("Proceed?");
+    response.setConfirmed(true);
+    status.setInteractionResponse(response);
 
-        ConfirmationUserInteraction pending = InteractionFactory.eINSTANCE.createConfirmationUserInteraction();
-        pending.setMessage("Proceed?");
-        status.setWaitingForInteraction(pending);
+    worker.join(2_000);
+    assertThat(worker.isAlive()).isFalse();
+    assertThat(workerResult[0].isConfirmed()).isTrue();
+    assertThat(status.getState()).isEqualTo(AsyncTaskState.RUNNING);
+    assertThat(status.getPendingInteraction()).isNull();
+  }
 
-        ConfirmationUserInteraction[] workerResult = new ConfirmationUserInteraction[1];
-        Thread worker = new Thread(() -> {
-            try {
+  @Test
+  void parkAsInconsistencyKeepsWorkerWaiting() throws Exception {
+    AsyncTaskStatus status = new AsyncTaskStatus(UUID.randomUUID(), UUID.randomUUID());
+
+    ConfirmationUserInteraction pending =
+        InteractionFactory.eINSTANCE.createConfirmationUserInteraction();
+    pending.setMessage("Proceed?");
+    status.setWaitingForInteraction(pending);
+
+    ConfirmationUserInteraction[] workerResult = new ConfirmationUserInteraction[1];
+    Thread worker =
+        new Thread(
+            () -> {
+              try {
                 workerResult[0] = status.waitForInteractionResponse();
-            } catch (InterruptedException e) {
+              } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new RuntimeException(e);
-            }
-        });
-        worker.start();
+              }
+            });
+    worker.start();
 
-        for (int attempt = 0; attempt < 20 && status.getState() != AsyncTaskState.WAITING_USER_INTERACTION; attempt++) {
-            TimeUnit.MILLISECONDS.sleep(10);
-        }
-        assertThat(status.getState()).isEqualTo(AsyncTaskState.WAITING_USER_INTERACTION);
-
-        status.parkAsInconsistency();
-        TimeUnit.MILLISECONDS.sleep(100);
-        assertThat(worker.isAlive()).isTrue();
-        assertThat(status.isParkedAsInconsistency()).isTrue();
-        assertThat(status.getState()).isEqualTo(AsyncTaskState.WAITING_USER_INTERACTION);
-
-        ConfirmationUserInteraction response = InteractionFactory.eINSTANCE.createConfirmationUserInteraction();
-        response.setMessage("Proceed?");
-        response.setConfirmed(true);
-        status.setInteractionResponse(response);
-
-        worker.join(2_000);
-        assertThat(worker.isAlive()).isFalse();
-        assertThat(workerResult[0].isConfirmed()).isTrue();
-        assertThat(status.getState()).isEqualTo(AsyncTaskState.RUNNING);
+    for (int attempt = 0;
+        attempt < 20 && status.getState() != AsyncTaskState.WAITING_USER_INTERACTION;
+        attempt++) {
+      TimeUnit.MILLISECONDS.sleep(10);
     }
+    assertThat(status.getState()).isEqualTo(AsyncTaskState.WAITING_USER_INTERACTION);
 
-    @Test
-    void markInconsistentUnblocksWaitingWorker() throws Exception {
-        AsyncTaskStatus status = new AsyncTaskStatus(UUID.randomUUID(), UUID.randomUUID());
+    status.parkAsInconsistency();
+    TimeUnit.MILLISECONDS.sleep(100);
+    assertThat(worker.isAlive()).isTrue();
+    assertThat(status.isParkedAsInconsistency()).isTrue();
+    assertThat(status.getState()).isEqualTo(AsyncTaskState.WAITING_USER_INTERACTION);
 
-        ConfirmationUserInteraction pending = InteractionFactory.eINSTANCE.createConfirmationUserInteraction();
-        pending.setMessage("Proceed?");
-        status.setWaitingForInteraction(pending);
+    ConfirmationUserInteraction response =
+        InteractionFactory.eINSTANCE.createConfirmationUserInteraction();
+    response.setMessage("Proceed?");
+    response.setConfirmed(true);
+    status.setInteractionResponse(response);
 
-        Throwable[] workerError = new Throwable[1];
-        Thread worker = new Thread(() -> {
-            try {
+    worker.join(2_000);
+    assertThat(worker.isAlive()).isFalse();
+    assertThat(workerResult[0].isConfirmed()).isTrue();
+    assertThat(status.getState()).isEqualTo(AsyncTaskState.RUNNING);
+  }
+
+  @Test
+  void markInconsistentUnblocksWaitingWorker() throws Exception {
+    AsyncTaskStatus status = new AsyncTaskStatus(UUID.randomUUID(), UUID.randomUUID());
+
+    ConfirmationUserInteraction pending =
+        InteractionFactory.eINSTANCE.createConfirmationUserInteraction();
+    pending.setMessage("Proceed?");
+    status.setWaitingForInteraction(pending);
+
+    Throwable[] workerError = new Throwable[1];
+    Thread worker =
+        new Thread(
+            () -> {
+              try {
                 status.waitForInteractionResponse();
-            } catch (PropagationInconsistentException e) {
+              } catch (PropagationInconsistentException e) {
                 workerError[0] = e;
-            } catch (InterruptedException e) {
+              } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new RuntimeException(e);
-            }
-        });
-        worker.start();
+              }
+            });
+    worker.start();
 
-        for (int attempt = 0; attempt < 20 && status.getState() != AsyncTaskState.WAITING_USER_INTERACTION; attempt++) {
-            TimeUnit.MILLISECONDS.sleep(10);
-        }
-        assertThat(status.getState()).isEqualTo(AsyncTaskState.WAITING_USER_INTERACTION);
-
-        status.markInconsistent();
-        worker.join(2_000);
-
-        assertThat(worker.isAlive()).isFalse();
-        assertThat(workerError[0]).isInstanceOf(PropagationInconsistentException.class);
-        assertThat(status.getState()).isEqualTo(AsyncTaskState.INCONSISTENT);
-        assertThat(status.getPendingInteraction()).isNotNull();
-        assertThat(status.isCompleted()).isTrue();
+    for (int attempt = 0;
+        attempt < 20 && status.getState() != AsyncTaskState.WAITING_USER_INTERACTION;
+        attempt++) {
+      TimeUnit.MILLISECONDS.sleep(10);
     }
+    assertThat(status.getState()).isEqualTo(AsyncTaskState.WAITING_USER_INTERACTION);
+
+    status.markInconsistent();
+    worker.join(2_000);
+
+    assertThat(worker.isAlive()).isFalse();
+    assertThat(workerError[0]).isInstanceOf(PropagationInconsistentException.class);
+    assertThat(status.getState()).isEqualTo(AsyncTaskState.INCONSISTENT);
+    assertThat(status.getPendingInteraction()).isNotNull();
+    assertThat(status.isCompleted()).isTrue();
+  }
 }

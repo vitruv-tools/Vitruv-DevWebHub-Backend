@@ -40,10 +40,9 @@ public class UserProfileUseCases {
   private final MentionService mentionService;
 
   /**
-   * Creates a profile on first sign-in and returns a secret token.
-   * Later sign-ins must present that token. A missing or wrong token does not
-   * reissue it or overwrite a normal profile. The shared {@code demo} login is
-   * the exception: any browser that signs in as demo may reclaim the token,
+   * Creates a profile on first sign-in and returns a secret token. Later sign-ins must present that
+   * token. A missing or wrong token does not reissue it or overwrite a normal profile. The shared
+   * {@code demo} login is the exception: any browser that signs in as demo may reclaim the token,
    * because that account is a public local fallback, not a private identity.
    */
   @Transactional
@@ -73,18 +72,15 @@ public class UserProfileUseCases {
   }
 
   private UserProfileResponse saveWithNewToken(
-      AppUser user,
-      UpsertUserRequest request,
-      String username,
-      Instant now
-  ) {
+      AppUser user, UpsertUserRequest request, String username, Instant now) {
     String issued = newToken();
     user.setProfileTokenHash(hash(issued));
     return toResponse(saveSignIn(user, request, username, now), issued);
   }
 
   /** Saves the sign-in and refreshes tags only if the user is new or their label changed. */
-  private AppUser saveSignIn(AppUser user, UpsertUserRequest request, String username, Instant now) {
+  private AppUser saveSignIn(
+      AppUser user, UpsertUserRequest request, String username, Instant now) {
     boolean labelChanged = applySignInFields(user, request, username, now);
     AppUser saved = appUserRepo.save(user);
     if (labelChanged) {
@@ -98,15 +94,11 @@ public class UserProfileUseCases {
   }
 
   /**
-   * Returns whether the mention index must be rebuilt: true for a new user (no display name yet)
-   * or when the display name changed. Email and login time do not affect tags.
+   * Returns whether the mention index must be rebuilt: true for a new user (no display name yet) or
+   * when the display name changed. Email and login time do not affect tags.
    */
   private static boolean applySignInFields(
-      AppUser user,
-      UpsertUserRequest request,
-      String username,
-      Instant now
-  ) {
+      AppUser user, UpsertUserRequest request, String username, Instant now) {
     String previousDisplayName = user.getDisplayName();
     String newDisplayName = displayName(request.displayName(), username);
     user.setDisplayName(newDisplayName);
@@ -115,12 +107,12 @@ public class UserProfileUseCases {
     return !newDisplayName.equals(previousDisplayName);
   }
 
-  /**
-   * Directory of display names. Email and metamodel selections stay off this list.
-   */
+  /** Directory of display names. Email and metamodel selections stay off this list. */
   @Transactional(readOnly = true)
   public List<UserProfileResponse> list() {
-    return appUserRepo.findAllByOrderByUsernameAsc().stream().map(this::toDirectoryResponse).toList();
+    return appUserRepo.findAllByOrderByUsernameAsc().stream()
+        .map(this::toDirectoryResponse)
+        .toList();
   }
 
   @Transactional(readOnly = true)
@@ -132,10 +124,7 @@ public class UserProfileUseCases {
 
   @Transactional
   public UserProfileResponse updateMetamodels(
-      String username,
-      UpdateMetamodelsRequest request,
-      String presentedToken
-  ) {
+      String username, UpdateMetamodelsRequest request, String presentedToken) {
     AppUser user = getOrThrow(username);
     requireToken(user, presentedToken);
     List<String> canonical = new ArrayList<>();
@@ -172,8 +161,10 @@ public class UserProfileUseCases {
   }
 
   private AppUser getOrThrow(String username) {
-    return appUserRepo.findByUsernameIgnoreCase(requireUsername(username))
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + username));
+    return appUserRepo
+        .findByUsernameIgnoreCase(requireUsername(username))
+        .orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + username));
   }
 
   private static void requireToken(AppUser user, String presentedToken) {
@@ -199,8 +190,8 @@ public class UserProfileUseCases {
 
   private static String hash(String token) {
     try {
-      byte[] digest = MessageDigest.getInstance("SHA-256")
-          .digest(token.getBytes(StandardCharsets.UTF_8));
+      byte[] digest =
+          MessageDigest.getInstance("SHA-256").digest(token.getBytes(StandardCharsets.UTF_8));
       return HexFormat.of().formatHex(digest);
     } catch (NoSuchAlgorithmException e) {
       throw new IllegalStateException("SHA-256 is not available", e);
@@ -237,15 +228,12 @@ public class UserProfileUseCases {
         user.getCreatedAt(),
         user.getLastLoginAt(),
         List.of(),
-        null
-    );
+        null);
   }
 
   private UserProfileResponse toResponse(AppUser user, String profileToken) {
-    List<String> metamodels = user.getMetamodels().stream()
-        .map(UserMetamodel::getMetamodelName)
-        .sorted()
-        .toList();
+    List<String> metamodels =
+        user.getMetamodels().stream().map(UserMetamodel::getMetamodelName).sorted().toList();
     return new UserProfileResponse(
         user.getId(),
         user.getUsername(),
@@ -254,7 +242,6 @@ public class UserProfileUseCases {
         user.getCreatedAt(),
         user.getLastLoginAt(),
         metamodels,
-        profileToken
-    );
+        profileToken);
   }
 }

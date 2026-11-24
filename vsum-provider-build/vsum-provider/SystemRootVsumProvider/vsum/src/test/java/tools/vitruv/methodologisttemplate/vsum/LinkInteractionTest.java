@@ -1,5 +1,10 @@
 package tools.vitruv.methodologisttemplate.vsum;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Consumer;
 import mir.reactions.model2Model2.Model2Model2ChangePropagationSpecification;
 import mir.reactions.model2ToModel.Model2ToModelChangePropagationSpecification;
 import org.eclipse.emf.common.util.URI;
@@ -24,21 +29,17 @@ import tools.vitruv.methodologisttemplate.model.model.impl.ModelFactoryImpl;
 import tools.vitruv.methodologisttemplate.model.model2.Model2Factory;
 import tools.vitruv.methodologisttemplate.model.model2.Root;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Collection;
-import java.util.List;
-import java.util.function.Consumer;
-
 /**
- * Point 2 (Root Link → protocol multi-select / new protocol text) and
- * Point 3 (System Link → speed text input in MBits/s).
+ * Point 2 (Root Link → protocol multi-select / new protocol text) and Point 3 (System Link → speed
+ * text input in MBits/s).
  */
 class LinkInteractionTest {
 
   @BeforeAll
   static void setup() {
-    Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put("*", new XMIResourceFactoryImpl());
+    Resource.Factory.Registry.INSTANCE
+        .getExtensionToFactoryMap()
+        .put("*", new XMIResourceFactoryImpl());
   }
 
   @Test
@@ -49,17 +50,30 @@ class LinkInteractionTest {
     InternalVirtualModel vsum = createVirtualModel(tempDir, interactions);
     addSystem(vsum, tempDir);
 
-    modifyView(getDefaultView(vsum, List.of(System.class)).withChangeDerivingTrait(), view -> {
-      var system = view.getRootObjects(System.class).iterator().next();
-      var link = ModelFactory.eINSTANCE.createLink();
-      system.getLinks().add(link);
-    });
+    modifyView(
+        getDefaultView(vsum, List.of(System.class)).withChangeDerivingTrait(),
+        view -> {
+          var system = view.getRootObjects(System.class).iterator().next();
+          var link = ModelFactory.eINSTANCE.createLink();
+          system.getLinks().add(link);
+        });
 
-    Link link = getDefaultView(vsum, List.of(System.class))
-        .getRootObjects(System.class).iterator().next().getLinks().get(0);
+    Link link =
+        getDefaultView(vsum, List.of(System.class))
+            .getRootObjects(System.class)
+            .iterator()
+            .next()
+            .getLinks()
+            .get(0);
     Assertions.assertEquals(1000, link.getSpeedMBitsPerSecond());
-    Assertions.assertEquals(1, getDefaultView(vsum, List.of(Root.class))
-        .getRootObjects(Root.class).iterator().next().getLinks().size());
+    Assertions.assertEquals(
+        1,
+        getDefaultView(vsum, List.of(Root.class))
+            .getRootObjects(Root.class)
+            .iterator()
+            .next()
+            .getLinks()
+            .size());
     interactions.assertAllInteractionsOccurred();
   }
 
@@ -75,17 +89,36 @@ class LinkInteractionTest {
     InternalVirtualModel vsum = createVirtualModel(tempDir, interactions);
     addSystem(vsum, tempDir);
 
-    modifyView(getDefaultView(vsum, List.of(Root.class)).withChangeDerivingTrait(), view -> {
-      view.getRootObjects(Root.class).iterator().next().getLinks().add(Model2Factory.eINSTANCE.createLink());
-    });
-    modifyView(getDefaultView(vsum, List.of(Root.class)).withChangeDerivingTrait(), view -> {
-      view.getRootObjects(Root.class).iterator().next().getLinks().add(Model2Factory.eINSTANCE.createLink());
-    });
-    modifyView(getDefaultView(vsum, List.of(Root.class)).withChangeDerivingTrait(), view -> {
-      view.getRootObjects(Root.class).iterator().next().getLinks().add(Model2Factory.eINSTANCE.createLink());
-    });
+    modifyView(
+        getDefaultView(vsum, List.of(Root.class)).withChangeDerivingTrait(),
+        view -> {
+          view.getRootObjects(Root.class)
+              .iterator()
+              .next()
+              .getLinks()
+              .add(Model2Factory.eINSTANCE.createLink());
+        });
+    modifyView(
+        getDefaultView(vsum, List.of(Root.class)).withChangeDerivingTrait(),
+        view -> {
+          view.getRootObjects(Root.class)
+              .iterator()
+              .next()
+              .getLinks()
+              .add(Model2Factory.eINSTANCE.createLink());
+        });
+    modifyView(
+        getDefaultView(vsum, List.of(Root.class)).withChangeDerivingTrait(),
+        view -> {
+          view.getRootObjects(Root.class)
+              .iterator()
+              .next()
+              .getLinks()
+              .add(Model2Factory.eINSTANCE.createLink());
+        });
 
-    System system = getDefaultView(vsum, List.of(System.class)).getRootObjects(System.class).iterator().next();
+    System system =
+        getDefaultView(vsum, List.of(System.class)).getRootObjects(System.class).iterator().next();
     Assertions.assertEquals(3, system.getLinks().size());
     Link link = system.getLinks().get(2);
     Assertions.assertEquals(2, link.getSupportedProtocols().size());
@@ -105,18 +138,32 @@ class LinkInteractionTest {
     InternalVirtualModel vsum = createVirtualModel(tempDir, interactions);
     addSystem(vsum, tempDir);
 
-    modifyView(getDefaultView(vsum, List.of(Root.class)).withChangeDerivingTrait(), view -> {
-      view.getRootObjects(Root.class).iterator().next().getLinks().add(Model2Factory.eINSTANCE.createLink());
-    });
-    modifyView(getDefaultView(vsum, List.of(Root.class)).withChangeDerivingTrait(), view -> {
-      view.getRootObjects(Root.class).iterator().next().getLinks().add(Model2Factory.eINSTANCE.createLink());
-    });
+    modifyView(
+        getDefaultView(vsum, List.of(Root.class)).withChangeDerivingTrait(),
+        view -> {
+          view.getRootObjects(Root.class)
+              .iterator()
+              .next()
+              .getLinks()
+              .add(Model2Factory.eINSTANCE.createLink());
+        });
+    modifyView(
+        getDefaultView(vsum, List.of(Root.class)).withChangeDerivingTrait(),
+        view -> {
+          view.getRootObjects(Root.class)
+              .iterator()
+              .next()
+              .getLinks()
+              .add(Model2Factory.eINSTANCE.createLink());
+        });
 
-    System system = getDefaultView(vsum, List.of(System.class)).getRootObjects(System.class).iterator().next();
+    System system =
+        getDefaultView(vsum, List.of(System.class)).getRootObjects(System.class).iterator().next();
     Link link = system.getLinks().get(1);
     Assertions.assertEquals(1, link.getSupportedProtocols().size());
     Assertions.assertEquals("CustomProtocol", link.getProtocol().getName());
-    Assertions.assertTrue(system.getProtocols().stream().anyMatch(p -> "CustomProtocol".equals(p.getName())));
+    Assertions.assertTrue(
+        system.getProtocols().stream().anyMatch(p -> "CustomProtocol".equals(p.getName())));
     interactions.assertAllInteractionsOccurred();
   }
 
@@ -128,29 +175,40 @@ class LinkInteractionTest {
     InternalVirtualModel vsum = createVirtualModel(tempDir, interactions);
     addSystem(vsum, tempDir);
 
-    modifyView(getDefaultView(vsum, List.of(Root.class)).withChangeDerivingTrait(), view -> {
-      view.getRootObjects(Root.class).iterator().next().getLinks().add(Model2Factory.eINSTANCE.createLink());
-    });
+    modifyView(
+        getDefaultView(vsum, List.of(Root.class)).withChangeDerivingTrait(),
+        view -> {
+          view.getRootObjects(Root.class)
+              .iterator()
+              .next()
+              .getLinks()
+              .add(Model2Factory.eINSTANCE.createLink());
+        });
 
-    System system = getDefaultView(vsum, List.of(System.class)).getRootObjects(System.class).iterator().next();
+    System system =
+        getDefaultView(vsum, List.of(System.class)).getRootObjects(System.class).iterator().next();
     Assertions.assertEquals(1, system.getProtocols().size());
     Assertions.assertEquals("FirstProtocol", system.getLinks().get(0).getProtocol().getName());
     interactions.assertAllInteractionsOccurred();
   }
 
-  private static InternalVirtualModel createVirtualModel(Path projectPath, TestUserInteraction interactions) {
+  private static InternalVirtualModel createVirtualModel(
+      Path projectPath, TestUserInteraction interactions) {
     try {
-    InternalVirtualModel model = new VirtualModelBuilder()
-        .withStorageFolder(projectPath)
-        .withUserInteractorForResultProvider(new TestUserInteraction.ResultProvider(interactions))
-        .withChangePropagationSpecifications(
-            new Model2Model2ChangePropagationSpecification(),
-            new Model2ToModelChangePropagationSpecification())
-        .withViewType(ViewTypeFactory.createIdentityMappingViewType(
-            "default", ModelFactoryImpl.init().getModelPackage()))
-        .buildAndInitialize();
-    model.setChangePropagationMode(ChangePropagationMode.TRANSITIVE_CYCLIC);
-    return model;
+      InternalVirtualModel model =
+          new VirtualModelBuilder()
+              .withStorageFolder(projectPath)
+              .withUserInteractorForResultProvider(
+                  new TestUserInteraction.ResultProvider(interactions))
+              .withChangePropagationSpecifications(
+                  new Model2Model2ChangePropagationSpecification(),
+                  new Model2ToModelChangePropagationSpecification())
+              .withViewType(
+                  ViewTypeFactory.createIdentityMappingViewType(
+                      "default", ModelFactoryImpl.init().getModelPackage()))
+              .buildAndInitialize();
+      model.setChangePropagationMode(ChangePropagationMode.TRANSITIVE_CYCLIC);
+      return model;
     } catch (IOException e) {
       throw new RuntimeException("Failed to prepare VSUM storage folder: " + projectPath, e);
     }
@@ -165,15 +223,18 @@ class LinkInteractionTest {
   }
 
   private static View getDefaultView(VirtualModel vsum, Collection<Class<?>> rootTypes) {
-    var selector = vsum.createSelector(ViewTypeFactory.createIdentityMappingViewType(
-        "default", ModelFactoryImpl.init().getModelPackage()));
+    var selector =
+        vsum.createSelector(
+            ViewTypeFactory.createIdentityMappingViewType(
+                "default", ModelFactoryImpl.init().getModelPackage()));
     selector.getSelectableElements().stream()
         .filter(element -> rootTypes.stream().anyMatch(it -> it.isInstance(element)))
         .forEach(it -> selector.setSelected(it, true));
     return selector.createView();
   }
 
-  private static void modifyView(CommittableView view, Consumer<CommittableView> modificationFunction) {
+  private static void modifyView(
+      CommittableView view, Consumer<CommittableView> modificationFunction) {
     modificationFunction.accept(view);
     view.commitChanges();
   }

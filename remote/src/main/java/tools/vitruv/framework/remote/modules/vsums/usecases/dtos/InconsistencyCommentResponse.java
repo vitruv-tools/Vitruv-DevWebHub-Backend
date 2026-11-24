@@ -10,6 +10,4 @@ public record InconsistencyCommentResponse(
     String author,
     String body,
     Instant createdAt,
-    List<CommentMentionResponse> mentions
-) {
-}
+    List<CommentMentionResponse> mentions) {}

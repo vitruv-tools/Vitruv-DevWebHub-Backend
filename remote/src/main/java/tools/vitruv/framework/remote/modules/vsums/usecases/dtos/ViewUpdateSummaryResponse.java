@@ -10,6 +10,4 @@ public record ViewUpdateSummaryResponse(
     String viewTypeName,
     List<String> selectedObjectEClassNames,
     Instant timestamp,
-    int resourceSetLength
-) {
-}
+    int resourceSetLength) {}
