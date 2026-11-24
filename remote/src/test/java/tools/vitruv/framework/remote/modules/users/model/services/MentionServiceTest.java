@@ -18,6 +18,12 @@ import static org.mockito.Mockito.when;
 
 class MentionServiceTest {
 
+    private static final String ADA = "ada";
+    private static final String ADA_LOVELACE = "Ada Lovelace";
+    private static final String GRACE = "grace";
+    private static final String ASCET = "ascet";
+    private static final String AMALTHEA = "amalthea";
+
     private AppUserRepo appUserRepo;
     private MentionService service;
 
@@ -26,13 +32,13 @@ class MentionServiceTest {
         appUserRepo = mock(AppUserRepo.class);
         KnowledgeMetamodelCatalog catalog = mock(KnowledgeMetamodelCatalog.class);
         when(appUserRepo.findAllByOrderByUsernameAsc()).thenReturn(List.of(
-                user("ada", "Ada Lovelace"),
+                user(ADA, ADA_LOVELACE),
                 user("ada.l", "Ada L"),
-                user("amalthea", "A user named like a metamodel"),
-                user("grace", null)));
+                user(AMALTHEA, "A user named like a metamodel"),
+                user(GRACE, null)));
         when(catalog.listAvailable()).thenReturn(List.of(
-                new KnowledgeMetamodel("amalthea", "Amalthea"),
-                new KnowledgeMetamodel("ascet", "Ascet")));
+                new KnowledgeMetamodel(AMALTHEA, "Amalthea"),
+                new KnowledgeMetamodel(ASCET, "Ascet")));
         service = new MentionService(appUserRepo, catalog);
     }
 
@@ -40,9 +46,9 @@ class MentionServiceTest {
     void findsUsersAndMetamodelsIgnoringCaseAndDuplicates() {
         assertThat(service.parse("Hi @Ada, can @ASCET experts and @grace look? @ada again."))
                 .containsExactly(
-                        new Mention(MentionKind.USER, "ada"),
-                        new Mention(MentionKind.METAMODEL, "ascet"),
-                        new Mention(MentionKind.USER, "grace"));
+                        new Mention(MentionKind.USER, ADA),
+                        new Mention(MentionKind.METAMODEL, ASCET),
+                        new Mention(MentionKind.USER, GRACE));
     }
 
     @Test
@@ -66,11 +72,11 @@ class MentionServiceTest {
 
     @Test
     void keepsTagsBeforeSentencePunctuation() {
-        assertThat(service.parse("thanks @ada.")).containsExactly(new Mention(MentionKind.USER, "ada"));
+        assertThat(service.parse("thanks @ada.")).containsExactly(new Mention(MentionKind.USER, ADA));
         assertThat(service.parse("@ada, @ascet; @grace!")).containsExactly(
-                new Mention(MentionKind.USER, "ada"),
-                new Mention(MentionKind.METAMODEL, "ascet"),
-                new Mention(MentionKind.USER, "grace"));
+                new Mention(MentionKind.USER, ADA),
+                new Mention(MentionKind.METAMODEL, ASCET),
+                new Mention(MentionKind.USER, GRACE));
     }
 
     @Test
@@ -81,14 +87,14 @@ class MentionServiceTest {
     // New usernames cannot take a metamodel's name. This covers a metamodel added after the user.
     @Test
     void anExistingUserKeepsTheNameWhenAMetamodelLaterAppearsUnderIt() {
-        assertThat(service.parse("@amalthea")).containsExactly(new Mention(MentionKind.USER, "amalthea"));
+        assertThat(service.parse("@amalthea")).containsExactly(new Mention(MentionKind.USER, AMALTHEA));
     }
 
     @Test
     void buildsTheCandidateListOnceUntilInvalidated() {
         service.parse("@ada");
         service.parse("@grace");
-        service.resolve(List.of(new Mention(MentionKind.USER, "ada")));
+        service.resolve(List.of(new Mention(MentionKind.USER, ADA)));
         verify(appUserRepo, times(1)).findAllByOrderByUsernameAsc();
 
         service.invalidate();
@@ -98,24 +104,24 @@ class MentionServiceTest {
 
     @Test
     void trailingPunctuationEndsTheTag() {
-        assertThat(service.parse("(@grace)")).containsExactly(new Mention(MentionKind.USER, "grace"));
-        assertThat(service.parse("thanks @ascet.")).containsExactly(new Mention(MentionKind.METAMODEL, "ascet"));
+        assertThat(service.parse("(@grace)")).containsExactly(new Mention(MentionKind.USER, GRACE));
+        assertThat(service.parse("thanks @ascet.")).containsExactly(new Mention(MentionKind.METAMODEL, ASCET));
     }
 
     @Test
     void resolvesLabelsAndExpandsMetamodelsToUsers() {
-        when(appUserRepo.findAllKnowingMetamodel("ascet"))
-                .thenReturn(List.of(user("ada", "Ada Lovelace"), user("grace", null)));
+        when(appUserRepo.findAllKnowingMetamodel(ASCET))
+                .thenReturn(List.of(user(ADA, ADA_LOVELACE), user(GRACE, null)));
 
         List<ResolvedMention> resolved = service.resolve(List.of(
-                new Mention(MentionKind.USER, "ada"),
-                new Mention(MentionKind.USER, "grace"),
-                new Mention(MentionKind.METAMODEL, "ascet")));
+                new Mention(MentionKind.USER, ADA),
+                new Mention(MentionKind.USER, GRACE),
+                new Mention(MentionKind.METAMODEL, ASCET)));
 
         assertThat(resolved).containsExactly(
-                new ResolvedMention(MentionKind.USER, "ada", "Ada Lovelace", List.of("ada")),
-                new ResolvedMention(MentionKind.USER, "grace", "grace", List.of("grace")),
-                new ResolvedMention(MentionKind.METAMODEL, "ascet", "Ascet", List.of("ada", "grace")));
+                new ResolvedMention(MentionKind.USER, ADA, ADA_LOVELACE, List.of(ADA)),
+                new ResolvedMention(MentionKind.USER, GRACE, GRACE, List.of(GRACE)),
+                new ResolvedMention(MentionKind.METAMODEL, ASCET, "Ascet", List.of(ADA, GRACE)));
     }
 
     private static AppUser user(String username, String displayName) {

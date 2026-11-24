@@ -42,4 +42,15 @@ public class InconsistencyCommentMention extends BaseEntity {
    */
   @Column(nullable = false, columnDefinition = "integer not null default 0")
   private int position;
+
+  /** Identity is the database id, as for every entity; the added fields do not change it. */
+  @Override
+  public boolean equals(Object other) {
+    return super.equals(other);
+  }
+
+  @Override
+  public int hashCode() {
+    return super.hashCode();
+  }
 }

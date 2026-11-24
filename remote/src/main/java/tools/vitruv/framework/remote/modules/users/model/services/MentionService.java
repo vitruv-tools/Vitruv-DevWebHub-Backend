@@ -10,6 +10,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
@@ -64,13 +65,13 @@ public class MentionService {
 
   private final AppUserRepo appUserRepo;
   private final KnowledgeMetamodelCatalog knowledgeMetamodelCatalog;
-  private volatile Index index;
+  private final AtomicReference<Index> index = new AtomicReference<>();
 
   /**
    * Drops the cached index. Call this whenever a user is created or their display name changes.
    */
   public void invalidate() {
-    index = null;
+    index.set(null);
   }
 
   /**
@@ -123,11 +124,11 @@ public class MentionService {
   }
 
   private Index currentIndex() {
-    Index snapshot = index;
+    Index snapshot = index.get();
     if (snapshot == null
         || System.nanoTime() - snapshot.builtAtNanos() > METAMODEL_REFRESH_NANOS) {
       snapshot = buildIndex();
-      index = snapshot;
+      index.set(snapshot);
     }
     return snapshot;
   }
