@@ -47,7 +47,7 @@ class SystemRootLinkSpeedInteractionPropagationTest {
               "eClass": "http://vitruv.tools/methodologisttemplate/model#//System",
               "_id": "/",
               "links": [
-                { }
+                {}
               ]
             }
           }
@@ -84,7 +84,7 @@ class SystemRootLinkSpeedInteractionPropagationTest {
               "eClass": "http://vitruv.tools/methodologisttemplate/model#//System",
               "_id": "/",
               "links": [
-                { }
+                {}
               ]
             }
           }

@@ -15,7 +15,11 @@ import lombok.val;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.vitruv.framework.remote.modules.vsums.async.AsyncTaskState;
-import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.*;
+import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.CreateVsumRequestBody;
+import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.OpenViewRequestBody;
+import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.PropagationTaskStatusResponse;
+import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.StartAsyncUpdateResponse;
+import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.VsumInfoResponseBody;
 
 /** Shared REST helpers for SystemRootVsum async interaction tests. */
 final class SystemRootInteractionPropagationTestSupport {
@@ -59,7 +63,7 @@ final class SystemRootInteractionPropagationTestSupport {
             .getContentAsString();
 
     JsonNode selector = objectMapper.readTree(createSelectorResponseBody);
-    val selectorId = UUID.fromString(selector.get("id").asText());
+    final UUID selectorId = UUID.fromString(selector.get("id").asText());
 
     int rootIndex = -1;
     int systemIndex = -1;

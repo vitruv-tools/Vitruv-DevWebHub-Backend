@@ -111,7 +111,7 @@ public class AsyncTaskStatus {
       if (state == AsyncTaskState.INCONSISTENT) {
         throw new PropagationInconsistentException(taskId);
       }
-      T response = (T) interactionResponse;
+      final T response = (T) interactionResponse;
       interactionResponse = null;
       pendingInteraction = null;
       this.state = AsyncTaskState.RUNNING;

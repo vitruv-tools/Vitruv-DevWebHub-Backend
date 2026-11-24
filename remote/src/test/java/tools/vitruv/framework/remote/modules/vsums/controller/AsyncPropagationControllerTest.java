@@ -1,7 +1,9 @@
 package tools.vitruv.framework.remote.modules.vsums.controller;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,7 +15,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.vitruv.framework.remote.helper.IntegrationTest;
 import tools.vitruv.framework.remote.modules.vsums.async.AsyncTaskState;
-import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.*;
+import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.CreateVsumRequestBody;
+import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.OpenViewRequestBody;
+import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.PropagationTaskStatusResponse;
+import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.StartAsyncUpdateResponse;
+import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.VsumInfoResponseBody;
 
 @IntegrationTest
 class AsyncPropagationControllerTest {

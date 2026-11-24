@@ -134,21 +134,6 @@ public class ChangeRecordingRemoteView implements CommittableView {
     changeRecorder.beginRecording();
   }
 
-  @Override
-  public Map<Class<?>, Object> getAnnotations() {
-    return Collections.unmodifiableMap(base.annotations);
-  }
-
-  @Override
-  public <T> Optional<T> getAnnotation(Class<T> type) {
-    return Optional.ofNullable(type.cast(base.annotations.get(type)));
-  }
-
-  @Override
-  public <T> void setAnnotation(Class<T> type, T value) {
-    base.annotations.put(type, value);
-  }
-
   /**
    * Commits the changes made to the view and its containing elements, along with the provided user.
    *
@@ -163,5 +148,20 @@ public class ChangeRecordingRemoteView implements CommittableView {
     base.remoteConnection.propagateChanges(base.uuid, unresolvedChanges);
     base.modified = false;
     changeRecorder.beginRecording();
+  }
+
+  @Override
+  public Map<Class<?>, Object> getAnnotations() {
+    return Collections.unmodifiableMap(base.annotations);
+  }
+
+  @Override
+  public <T> Optional<T> getAnnotation(Class<T> type) {
+    return Optional.ofNullable(type.cast(base.annotations.get(type)));
+  }
+
+  @Override
+  public <T> void setAnnotation(Class<T> type, T value) {
+    base.annotations.put(type, value);
   }
 }
