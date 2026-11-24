@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+    "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+    "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+
+<!-- Loaded by the SuppressionFilter in checkstyle.xml. -->
+<suppressions>
+  <!-- EMF code generated from amalthea.genmodel and ascet.genmodel. -->
+  <suppress files="[\\/]amalthea-acset-integration[\\/]model[\\/]src[\\/]main[\\/]java[\\/]" checks=".*"/>
+  <!-- Code generated from amalthea2acset.reactions (reactions and routines packages). -->
+  <suppress files="[\\/]amalthea-acset-integration[\\/]consistency[\\/]src[\\/]main[\\/]java[\\/]edu[\\/]neu[\\/]ccs[\\/]prl[\\/]galette[\\/]reactions[\\/]mir[\\/](reactions|routines)[\\/]" checks=".*"/>
+</suppressions>
