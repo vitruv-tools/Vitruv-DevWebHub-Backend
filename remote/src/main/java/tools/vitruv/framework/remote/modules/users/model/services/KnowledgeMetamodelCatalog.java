@@ -40,6 +40,27 @@ public class KnowledgeMetamodelCatalog {
     return listAvailable(Path.of(vsumProperties.vsumProvidersDir()));
   }
 
+  List<KnowledgeMetamodel> listAvailable(Path providersDir) {
+    LinkedHashMap<String, KnowledgeMetamodel> byName = new LinkedHashMap<>();
+    if (!Files.isDirectory(providersDir)) {
+      return List.of();
+    }
+    try (Stream<Path> providers = Files.list(providersDir)) {
+      providers
+          .filter(Files::isDirectory)
+          .sorted(Comparator.comparing(path -> path.getFileName().toString()))
+          .forEach(
+              provider -> {
+                for (String name : cachedPackageNames(provider.resolve("ecore-models"))) {
+                  byName.putIfAbsent(name, new KnowledgeMetamodel(name, labelFor(name)));
+                }
+              });
+    } catch (IOException e) {
+      return List.of();
+    }
+    return new ArrayList<>(byName.values());
+  }
+
   public List<String> packageNamesForProvider(String providerName) {
     if (providerName == null || providerName.isBlank()) {
       return List.of();
@@ -60,27 +81,6 @@ public class KnowledgeMetamodelCatalog {
         .filter(name -> name.equals(normalized))
         .findFirst()
         .orElse(null);
-  }
-
-  List<KnowledgeMetamodel> listAvailable(Path providersDir) {
-    LinkedHashMap<String, KnowledgeMetamodel> byName = new LinkedHashMap<>();
-    if (!Files.isDirectory(providersDir)) {
-      return List.of();
-    }
-    try (Stream<Path> providers = Files.list(providersDir)) {
-      providers
-          .filter(Files::isDirectory)
-          .sorted(Comparator.comparing(path -> path.getFileName().toString()))
-          .forEach(
-              provider -> {
-                for (String name : cachedPackageNames(provider.resolve("ecore-models"))) {
-                  byName.putIfAbsent(name, new KnowledgeMetamodel(name, labelFor(name)));
-                }
-              });
-    } catch (IOException e) {
-      return List.of();
-    }
-    return new ArrayList<>(byName.values());
   }
 
   static String readPackageName(String xml) {

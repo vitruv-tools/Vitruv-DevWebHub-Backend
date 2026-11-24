@@ -4,7 +4,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -14,12 +22,29 @@ import tools.vitruv.framework.remote.modules.users.model.services.KnowledgeMetam
 import tools.vitruv.framework.remote.modules.users.model.services.MentionService;
 import tools.vitruv.framework.remote.modules.vsums.async.AsyncTaskStatus;
 import tools.vitruv.framework.remote.modules.vsums.async.PropagationTaskRegistry;
-import tools.vitruv.framework.remote.modules.vsums.model.entities.*;
+import tools.vitruv.framework.remote.modules.vsums.model.entities.InconsistencyComment;
+import tools.vitruv.framework.remote.modules.vsums.model.entities.InconsistencyCommentMention;
+import tools.vitruv.framework.remote.modules.vsums.model.entities.InconsistencyCommentMentionRepo;
+import tools.vitruv.framework.remote.modules.vsums.model.entities.InconsistencyCommentRepo;
+import tools.vitruv.framework.remote.modules.vsums.model.entities.OpenInconsistency;
+import tools.vitruv.framework.remote.modules.vsums.model.entities.OpenInconsistencyRepo;
+import tools.vitruv.framework.remote.modules.vsums.model.entities.OpenInconsistencyState;
+import tools.vitruv.framework.remote.modules.vsums.model.entities.ViewUpdate;
+import tools.vitruv.framework.remote.modules.vsums.model.entities.ViewUpdateRepo;
+import tools.vitruv.framework.remote.modules.vsums.model.entities.VsumInfo;
+import tools.vitruv.framework.remote.modules.vsums.model.entities.VsumInfoRepo;
 import tools.vitruv.framework.remote.modules.vsums.model.manager.ViewManager;
 import tools.vitruv.framework.remote.modules.vsums.model.services.ViewService;
 import tools.vitruv.framework.remote.modules.vsums.model.wrapper.ViewWrapper;
-import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.*;
+import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.CommentMentionResponse;
+import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.CreateInconsistencyCommentRequest;
+import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.InconsistencyCommentResponse;
+import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.InconsistencyModelSnapshotResponse;
+import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.OpenInconsistencyResponse;
+import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.RecordInconsistencyResolutionRequest;
+import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.ViewUpdateSummaryResponse;
 
+/** Use cases for listing, commenting on, resolving, and visualizing parked inconsistencies. */
 @Service
 @RequiredArgsConstructor
 public class InconsistencyUseCases {

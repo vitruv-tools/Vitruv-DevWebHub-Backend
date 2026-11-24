@@ -6,7 +6,13 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import tools.vitruv.change.interaction.*;
+import tools.vitruv.change.interaction.ConfirmationUserInteraction;
+import tools.vitruv.change.interaction.FreeTextUserInteraction;
+import tools.vitruv.change.interaction.InteractionFactory;
+import tools.vitruv.change.interaction.InteractionResultProvider;
+import tools.vitruv.change.interaction.MultipleChoiceMultiSelectionUserInteraction;
+import tools.vitruv.change.interaction.MultipleChoiceSingleSelectionUserInteraction;
+import tools.vitruv.change.interaction.NotificationUserInteraction;
 import tools.vitruv.change.interaction.UserInteractionOptions.InputValidator;
 import tools.vitruv.change.interaction.UserInteractionOptions.NotificationType;
 import tools.vitruv.change.interaction.UserInteractionOptions.WindowModality;
@@ -149,7 +155,7 @@ public class ServerInteractionResultProvider implements InteractionResultProvide
       String positiveDecisionText,
       String cancelDecisionText,
       Iterable<String> choices) {
-    AsyncTaskStatus taskStatus = getTaskStatus();
+    final AsyncTaskStatus taskStatus = getTaskStatus();
 
     MultipleChoiceSingleSelectionUserInteraction interaction =
         InteractionFactory.eINSTANCE.createMultipleChoiceSingleSelectionUserInteraction();
@@ -177,7 +183,7 @@ public class ServerInteractionResultProvider implements InteractionResultProvide
       String positiveDecisionText,
       String cancelDecisionText,
       Iterable<String> choices) {
-    AsyncTaskStatus taskStatus = getTaskStatus();
+    final AsyncTaskStatus taskStatus = getTaskStatus();
 
     MultipleChoiceMultiSelectionUserInteraction interaction =
         InteractionFactory.eINSTANCE.createMultipleChoiceMultiSelectionUserInteraction();

@@ -13,7 +13,11 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
-import tools.vitruv.framework.views.*;
+import tools.vitruv.framework.views.CommittableView;
+import tools.vitruv.framework.views.View;
+import tools.vitruv.framework.views.ViewSelection;
+import tools.vitruv.framework.views.ViewSelector;
+import tools.vitruv.framework.views.ViewType;
 import tools.vitruv.framework.views.changederivation.StateBasedChangeResolutionStrategy;
 
 /**

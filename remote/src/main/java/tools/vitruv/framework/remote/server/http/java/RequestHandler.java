@@ -35,16 +35,15 @@ class RequestHandler implements HttpHandler {
     var method = exchange.getRequestMethod();
     var wrapper = new HttpExchangeWrapper(exchange);
     try {
-      var response =
-          switch (method) {
-            case "GET" -> endpoints.getEndpoint().process(wrapper);
-            case "PUT" -> endpoints.putEndpoint().process(wrapper);
-            case "POST" -> endpoints.postEndpoint().process(wrapper);
-            case "PATCH" -> endpoints.patchEndpoint().process(wrapper);
-            case "DELETE" -> endpoints.deleteEndpoint().process(wrapper);
-            default ->
-                throw new ServerHaltingException(HTTP_NOT_FOUND, "Request method not supported!");
-          };
+      var response = switch (method) {
+        case "GET" -> endpoints.getEndpoint().process(wrapper);
+        case "PUT" -> endpoints.putEndpoint().process(wrapper);
+        case "POST" -> endpoints.postEndpoint().process(wrapper);
+        case "PATCH" -> endpoints.patchEndpoint().process(wrapper);
+        case "DELETE" -> endpoints.deleteEndpoint().process(wrapper);
+        default ->
+            throw new ServerHaltingException(HTTP_NOT_FOUND, "Request method not supported!");
+      };
       if (response != null) {
         wrapper.sendResponse(HTTP_OK, response.getBytes(StandardCharsets.UTF_8));
       } else {

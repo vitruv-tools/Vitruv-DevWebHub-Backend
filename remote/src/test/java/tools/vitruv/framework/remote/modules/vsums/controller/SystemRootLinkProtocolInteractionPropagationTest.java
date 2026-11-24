@@ -65,7 +65,7 @@ class SystemRootLinkProtocolInteractionPropagationTest {
           "eClass": "http://vitruv.tools/methodologisttemplate/model2#//Root",
           "_id": "/",
           "links": [
-            { }
+            {}
           ]
         }
       }

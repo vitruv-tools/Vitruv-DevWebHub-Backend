@@ -1,6 +1,9 @@
 package tools.vitruv.framework.remote.common.utils;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
@@ -11,7 +14,7 @@ import org.junit.jupiter.api.Test;
 class StringUtilsTest {
 
   @Test
-  void testRandomString_GeneratesCorrectLength() {
+  void testRandomStringGeneratesCorrectLength() {
     // Arrange
     int length = 10;
 
@@ -25,7 +28,7 @@ class StringUtilsTest {
   }
 
   @Test
-  void testRandomString_ThrowsExceptionForNonPositiveLength() {
+  void testRandomStringThrowsExceptionForNonPositiveLength() {
     // Arrange
     int nonPositiveLength = 0;
 
@@ -41,7 +44,7 @@ class StringUtilsTest {
   }
 
   @Test
-  void testRandomString_GeneratesUniqueStrings() {
+  void testRandomStringGeneratesUniqueStrings() {
     // Arrange
     int length = 15;
 

@@ -1,6 +1,11 @@
 package tools.vitruv.framework.remote.common.entities;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 import java.util.UUID;
 import lombok.Getter;
 
@@ -29,9 +34,15 @@ public abstract class BaseEntity {
 
   @Override
   public boolean equals(Object other) {
-    if (this == other) return true;
-    if (!(other instanceof BaseEntity)) return false;
-    if (id == null) return false;
+    if (this == other) {
+      return true;
+    }
+    if (!(other instanceof BaseEntity)) {
+      return false;
+    }
+    if (id == null) {
+      return false;
+    }
     return id.equals(((BaseEntity) other).id);
   }
 

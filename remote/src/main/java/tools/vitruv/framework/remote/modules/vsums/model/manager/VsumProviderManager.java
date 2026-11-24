@@ -22,7 +22,7 @@ import vitruv.tools.framework.remote.vsumprovider.VsumProvider;
 public class VsumProviderManager {
   private final VsumProviderLoader vsumProviderLoader;
 
-  /** metamodelName -> vsumProvider */
+  /** Maps metamodel names to their VSUM providers. */
   private final Map<String, VsumProvider> vsumProviders = new ConcurrentHashMap<>();
 
   /**
