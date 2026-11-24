@@ -28,6 +28,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @IntegrationTest
 class CommentMentionsControllerTest {
 
+    private static final String ADA = "ada";
+    private static final String GRACE = "grace";
+    private static final String MODEL = "model";
+    private static final String GRACE_NAME = "Grace Hopper";
+
     @Autowired
     private MockMvc mvc;
 
@@ -44,8 +49,8 @@ class CommentMentionsControllerTest {
 
     @Test
     void commentsStoreUserAndMetamodelTagsAndExpandMetamodelsToUsers() throws Exception {
-        String adaToken = signIn("ada", "Ada Lovelace");
-        String graceToken = signIn("grace", "Grace Hopper");
+        String adaToken = signIn(ADA, "Ada Lovelace");
+        String graceToken = signIn(GRACE, GRACE_NAME);
         mvc.perform(put("/v1/users/ada/metamodels")
                         .header("X-Profile-Token", adaToken)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -54,31 +59,31 @@ class CommentMentionsControllerTest {
         OpenInconsistency inconsistency = saveInconsistency();
 
         String body = "@grace please check, and @Model people too. Mail ada@model.example is not a tag, @nobody neither.";
-        mvc.perform(post("/v1/inconsistencies/" + inconsistency.getId() + "/comments")
+        mvc.perform(post(commentsUrl(inconsistency))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"author\":\"ada\",\"body\":\"" + body + "\"}"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.mentions", hasSize(2)))
                 .andExpect(jsonPath("$.mentions[0].kind").value("USER"))
-                .andExpect(jsonPath("$.mentions[0].name").value("grace"))
-                .andExpect(jsonPath("$.mentions[0].label").value("Grace Hopper"))
-                .andExpect(jsonPath("$.mentions[0].users", contains("grace")))
+                .andExpect(jsonPath("$.mentions[0].name").value(GRACE))
+                .andExpect(jsonPath("$.mentions[0].label").value(GRACE_NAME))
+                .andExpect(jsonPath("$.mentions[0].users", contains(GRACE)))
                 .andExpect(jsonPath("$.mentions[1].kind").value("METAMODEL"))
-                .andExpect(jsonPath("$.mentions[1].name").value("model"))
-                .andExpect(jsonPath("$.mentions[1].users", contains("ada")));
+                .andExpect(jsonPath("$.mentions[1].name").value(MODEL))
+                .andExpect(jsonPath("$.mentions[1].users", contains(ADA)));
 
-        mvc.perform(post("/v1/inconsistencies/" + inconsistency.getId() + "/comments")
+        mvc.perform(post(commentsUrl(inconsistency))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"author\":\"grace\",\"body\":\"No tags in this one\"}"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.mentions", empty()));
 
-        mvc.perform(get("/v1/inconsistencies/" + inconsistency.getId() + "/comments"))
+        mvc.perform(get(commentsUrl(inconsistency)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].mentions", hasSize(2)))
-                .andExpect(jsonPath("$[0].mentions[0].name").value("grace"))
-                .andExpect(jsonPath("$[0].mentions[1].name").value("model"))
+                .andExpect(jsonPath("$[0].mentions[0].name").value(GRACE))
+                .andExpect(jsonPath("$[0].mentions[1].name").value(MODEL))
                 .andExpect(jsonPath("$[1].mentions", empty()));
 
         // Metamodel tags follow who knows the metamodel now, not when the comment was written.
@@ -87,8 +92,39 @@ class CommentMentionsControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"metamodels\":[\"model\"]}"))
                 .andExpect(status().isOk());
-        mvc.perform(get("/v1/inconsistencies/" + inconsistency.getId() + "/comments"))
-                .andExpect(jsonPath("$[0].mentions[1].users", contains("ada", "grace")));
+        mvc.perform(get(commentsUrl(inconsistency)))
+                .andExpect(jsonPath("$[0].mentions[1].users", contains(ADA, GRACE)));
+    }
+
+    @Test
+    void resolutionCommentsStoreTagsFromTheResolutionMessage() throws Exception {
+        signIn(GRACE, GRACE_NAME);
+        OpenInconsistency inconsistency = saveInconsistency();
+
+        mvc.perform(post("/v1/inconsistencies/" + inconsistency.getId() + "/resolution")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"resolvedBy\":\"ada\",\"choice\":\"keep\","
+                                + "\"comment\":\"@grace please double check, ask @model people\"}"))
+                .andExpect(status().isOk());
+
+        mvc.perform(get(commentsUrl(inconsistency)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].mentions", hasSize(2)))
+                .andExpect(jsonPath("$[0].mentions[0].name").value(GRACE))
+                .andExpect(jsonPath("$[0].mentions[1].name").value(MODEL));
+    }
+
+    @Test
+    void aMetamodelNameCannotBecomeAUsername() throws Exception {
+        mvc.perform(post("/v1/users/session")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"Model\",\"displayName\":\"Impostor\"}"))
+                .andExpect(status().isConflict());
+    }
+
+    private static String commentsUrl(OpenInconsistency inconsistency) {
+        return "/v1/inconsistencies/" + inconsistency.getId() + "/comments";
     }
 
     private String signIn(String username, String displayName) throws Exception {
