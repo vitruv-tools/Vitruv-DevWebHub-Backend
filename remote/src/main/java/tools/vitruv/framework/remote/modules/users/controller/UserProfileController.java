@@ -18,10 +18,9 @@ import tools.vitruv.framework.remote.modules.users.usecases.dtos.UpsertUserReque
 import tools.vitruv.framework.remote.modules.users.usecases.dtos.UserProfileResponse;
 
 /**
- * User profiles and the metamodels each user knows.
- * First sign-in issues an {@code X-Profile-Token}. Later sign-ins, reads, and
- * updates must present that token. The username in the path is not accepted
- * as identity on its own.
+ * User profiles and the metamodels each user knows. First sign-in issues an {@code
+ * X-Profile-Token}. Later sign-ins, reads, and updates must present that token. The username in the
+ * path is not accepted as identity on its own.
  */
 @RestController
 @RequestMapping("/v1/users")
@@ -34,8 +33,8 @@ public class UserProfileController {
   @PostMapping("/session")
   public UserProfileResponse signIn(
       @RequestBody UpsertUserRequest request,
-      @RequestHeader(value = UserProfileUseCases.PROFILE_TOKEN_HEADER, required = false) String profileToken
-  ) {
+      @RequestHeader(value = UserProfileUseCases.PROFILE_TOKEN_HEADER, required = false)
+          String profileToken) {
     return userProfileUseCases.signIn(request, profileToken);
   }
 
@@ -52,17 +51,17 @@ public class UserProfileController {
   @GetMapping("/{username}")
   public UserProfileResponse get(
       @PathVariable String username,
-      @RequestHeader(value = UserProfileUseCases.PROFILE_TOKEN_HEADER, required = false) String profileToken
-  ) {
+      @RequestHeader(value = UserProfileUseCases.PROFILE_TOKEN_HEADER, required = false)
+          String profileToken) {
     return userProfileUseCases.get(username, profileToken);
   }
 
   @PutMapping("/{username}/metamodels")
   public UserProfileResponse updateMetamodels(
       @PathVariable String username,
-      @RequestHeader(value = UserProfileUseCases.PROFILE_TOKEN_HEADER, required = false) String profileToken,
-      @RequestBody UpdateMetamodelsRequest request
-  ) {
+      @RequestHeader(value = UserProfileUseCases.PROFILE_TOKEN_HEADER, required = false)
+          String profileToken,
+      @RequestBody UpdateMetamodelsRequest request) {
     return userProfileUseCases.updateMetamodels(username, request, profileToken);
   }
 }

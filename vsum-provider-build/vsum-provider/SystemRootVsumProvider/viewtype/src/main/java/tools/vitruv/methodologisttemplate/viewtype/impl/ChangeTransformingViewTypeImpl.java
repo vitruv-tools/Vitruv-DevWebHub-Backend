@@ -1,16 +1,14 @@
 package tools.vitruv.methodologisttemplate.viewtype.impl;
 
-import tools.vitruv.methodologisttemplate.viewtype.ChangeTransformingViewType;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-
 import tools.vitruv.change.atomic.EChange;
 import tools.vitruv.change.atomic.hid.HierarchicalId;
 import tools.vitruv.change.composite.description.VitruviusChange;
 import tools.vitruv.change.composite.description.VitruviusChangeFactory;
 import tools.vitruv.framework.views.impl.ModifiableView;
+import tools.vitruv.methodologisttemplate.viewtype.ChangeTransformingViewType;
 
 public class ChangeTransformingViewTypeImpl extends ChangeTransformingViewType {
   private List<Function<List<EChange<HierarchicalId>>, List<EChange<HierarchicalId>>>> filters;
@@ -26,16 +24,18 @@ public class ChangeTransformingViewTypeImpl extends ChangeTransformingViewType {
     for (Function<List<EChange<HierarchicalId>>, List<EChange<HierarchicalId>>> filter : filters) {
       modifiedChange = filter.apply(modifiedChange);
     }
-    super.commitViewChanges(view, VitruviusChangeFactory.getInstance().createTransactionalChange(modifiedChange));
+    super.commitViewChanges(
+        view, VitruviusChangeFactory.getInstance().createTransactionalChange(modifiedChange));
   }
 
-  public boolean registerFilter(Function<List<EChange<HierarchicalId>>, List<EChange<HierarchicalId>>> filter) {
+  public boolean registerFilter(
+      Function<List<EChange<HierarchicalId>>, List<EChange<HierarchicalId>>> filter) {
     return this.filters.add(filter);
   }
 
   @Override
-  public boolean unregisterFilter(Function<List<EChange<HierarchicalId>>, List<EChange<HierarchicalId>>> filter) {
+  public boolean unregisterFilter(
+      Function<List<EChange<HierarchicalId>>, List<EChange<HierarchicalId>>> filter) {
     return this.filters.remove(filter);
   }
-
 }

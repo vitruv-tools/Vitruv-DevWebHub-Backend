@@ -1,12 +1,11 @@
 package tools.vitruv.framework.remote.modules.vsums.async;
 
-import org.springframework.stereotype.Component;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.stereotype.Component;
 
 @Component
 public class PropagationTaskRegistry {
@@ -67,8 +66,8 @@ public class PropagationTaskRegistry {
   }
 
   /**
-   * Resolves the task id for an in-flight async propagation.
-   * Uses the worker thread context when available, otherwise the sole active task.
+   * Resolves the task id for an in-flight async propagation. Uses the worker thread context when
+   * available, otherwise the sole active task.
    */
   public Optional<UUID> resolveActiveTaskId() {
     Optional<UUID> taskIdFromThread = ServerInteractionResultProvider.getCurrentTaskId();

@@ -1,5 +1,13 @@
 package tools.vitruv.framework.remote.modules.vsums.model.manager;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Path;
+import java.time.Instant;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -10,28 +18,17 @@ import tools.vitruv.framework.remote.modules.vsums.async.VitruviusInteractionRes
 import tools.vitruv.framework.remote.modules.vsums.model.entities.*;
 import tools.vitruv.framework.remote.modules.vsums.model.services.ViewService;
 import tools.vitruv.framework.remote.modules.vsums.model.wrapper.VsumWrapper;
-import vitruv.tools.framework.remote.vsumprovider.VsumProvider;
 import tools.vitruv.framework.vsum.VirtualModel;
-
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Path;
-import java.time.Instant;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+import vitruv.tools.framework.remote.vsumprovider.VsumProvider;
 
 /**
- * Manages the retrieval, initialization, caching, and deletion of VSUM instances.
- * VSUMs (Virtualized Service Utility Models) are dynamically loaded using metadata
- * and stored in a virtual environment for further processing or usage.
- * This class interacts with the underlying repository and provider manager to ensure
- * efficient management of VSUM resources.
- * <p>
- * The manager uses an internal cache to store already initialized VSUMs, reducing
- * redundant operations. The cache is updated or invalidated as necessary when
- * updates or deletions occur.
+ * Manages the retrieval, initialization, caching, and deletion of VSUM instances. VSUMs
+ * (Virtualized Service Utility Models) are dynamically loaded using metadata and stored in a
+ * virtual environment for further processing or usage. This class interacts with the underlying
+ * repository and provider manager to ensure efficient management of VSUM resources.
+ *
+ * <p>The manager uses an internal cache to store already initialized VSUMs, reducing redundant
+ * operations. The cache is updated or invalidated as necessary when updates or deletions occur.
  */
 @Component
 @RequiredArgsConstructor
@@ -50,10 +47,10 @@ public class VsumManager {
   private final Map<UUID, VsumWrapper> vsums = new ConcurrentHashMap<>();
 
   /**
-   * Retrieves a {@link VsumWrapper} associated with the specified VSUM identifier.
-   * If the VSUM is already cached, it is returned directly. Otherwise, it initializes
-   * and loads the VSUM using metadata, the associated virtual model, and a JSON mapper,
-   * then caches the result before returning it.
+   * Retrieves a {@link VsumWrapper} associated with the specified VSUM identifier. If the VSUM is
+   * already cached, it is returned directly. Otherwise, it initializes and loads the VSUM using
+   * metadata, the associated virtual model, and a JSON mapper, then caches the result before
+   * returning it.
    *
    * @param vsumId the unique identifier of the VSUM to retrieve
    * @return the {@link VsumWrapper} for the specified identifier
@@ -82,20 +79,22 @@ public class VsumManager {
   }
 
   /**
-   * Deletes the VSUM with the specified identifier. This method ensures that
-   * any cached information about the VSUM is removed and the corresponding
-   * entry in the repository is deleted.
+   * Deletes the VSUM with the specified identifier. This method ensures that any cached information
+   * about the VSUM is removed and the corresponding entry in the repository is deleted.
    *
    * @param vsumId the unique identifier of the VSUM to delete
    */
   public void deleteVsum(UUID vsumId) {
     viewManager.removeAndCloseViewsForVsum(vsumId);
-    openInconsistencyRepo.findByVsumIdAndState(vsumId, OpenInconsistencyState.OPEN).ifPresent(open -> {
-      open.setState(OpenInconsistencyState.FAILED);
-      open.setResolvedAt(Instant.now());
-      open.setMessage("VSUM deleted while inconsistency was still open");
-      openInconsistencyRepo.save(open);
-    });
+    openInconsistencyRepo
+        .findByVsumIdAndState(vsumId, OpenInconsistencyState.OPEN)
+        .ifPresent(
+            open -> {
+              open.setState(OpenInconsistencyState.FAILED);
+              open.setResolvedAt(Instant.now());
+              open.setMessage("VSUM deleted while inconsistency was still open");
+              openInconsistencyRepo.save(open);
+            });
     unloadVsum(vsumId);
     vsumInfoRepo.deleteById(vsumId);
   }
@@ -113,7 +112,8 @@ public class VsumManager {
     vsums.remove(vsumId);
   }
 
-  private VirtualModel initializeVirtualModel(VsumProvider provider, VsumInfo info, Path storagePath) {
+  private VirtualModel initializeVirtualModel(
+      VsumProvider provider, VsumInfo info, Path storagePath) {
     try {
       return provider.getInitializer(storagePath, interactionResultProvider).init();
     } catch (RuntimeException e) {
@@ -121,7 +121,8 @@ public class VsumManager {
         throw e;
       }
       log.warn(
-          "VSUM {} storage at {} is not valid XMI ({}). Quarantining folder and retrying with a fresh path.",
+          "VSUM {} storage at {} is not valid XMI ({}). Quarantining folder and retrying with a"
+              + " fresh path.",
           info.getId(),
           storagePath,
           e.getMessage());
@@ -160,9 +161,10 @@ public class VsumManager {
   }
 
   /**
-   * Absolute, normalized storage root. A relative root such as {@code ./vsum-storage} would otherwise
-   * reach Vitruv as {@code /cwd/./vsum-storage/...} for some resources and {@code /cwd/vsum-storage/...}
-   * for others. Vitruv then treats one file as two resources and can delete it while saving the other.
+   * Absolute, normalized storage root. A relative root such as {@code ./vsum-storage} would
+   * otherwise reach Vitruv as {@code /cwd/./vsum-storage/...} for some resources and {@code
+   * /cwd/vsum-storage/...} for others. Vitruv then treats one file as two resources and can delete
+   * it while saving the other.
    */
   private Path storageRoot() {
     return Path.of(vsumProperties.vsumStorageDir()).toAbsolutePath().normalize();
@@ -171,9 +173,7 @@ public class VsumManager {
   private Path getVsumStoragePath(VsumInfo info) {
     try {
       return VsumStoragePathResolver.resolveReplacingCorrupt(
-          storageRoot(),
-          info.getMetaModelName(),
-          info.getId());
+          storageRoot(), info.getMetaModelName(), info.getId());
     } catch (IOException e) {
       throw new UncheckedIOException("Failed to resolve VSUM storage path for " + info.getId(), e);
     }
@@ -185,7 +185,8 @@ public class VsumManager {
       return storageRoot()
           .resolve(VsumStoragePathResolver.directoryPrefix(info.getMetaModelName(), info.getId()));
     } catch (IOException e) {
-      throw new UncheckedIOException("Failed to quarantine corrupt VSUM storage for " + info.getId(), e);
+      throw new UncheckedIOException(
+          "Failed to quarantine corrupt VSUM storage for " + info.getId(), e);
     }
   }
 }

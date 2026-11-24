@@ -1,9 +1,5 @@
 package tools.vitruv.framework.remote.modules.users.model.services;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import tools.vitruv.framework.remote.config.VsumProperties;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,29 +12,29 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import tools.vitruv.framework.remote.config.VsumProperties;
 
 /**
- * Individual metamodels a user can claim knowledge of.
- * Names come from the {@code name} attribute of each provider's {@code ecore-models/*.ecore} package,
- * not from the provider folder (for example {@code amalthea} and {@code ascet}, not {@code AmaltheaAscet}).
- * Package lists are cached until an {@code .ecore} file in that folder changes size or last-modified time.
+ * Individual metamodels a user can claim knowledge of. Names come from the {@code name} attribute
+ * of each provider's {@code ecore-models/*.ecore} package, not from the provider folder (for
+ * example {@code amalthea} and {@code ascet}, not {@code AmaltheaAscet}). Package lists are cached
+ * until an {@code .ecore} file in that folder changes size or last-modified time.
  */
 @Service
 @RequiredArgsConstructor
 public class KnowledgeMetamodelCatalog {
 
-  private static final Pattern PACKAGE_NAME = Pattern.compile(
-      "<ecore:EPackage\\b[^>]*\\sname=\"([^\"]+)\""
-  );
+  private static final Pattern PACKAGE_NAME =
+      Pattern.compile("<ecore:EPackage\\b[^>]*\\sname=\"([^\"]+)\"");
 
   private final VsumProperties vsumProperties;
   private final ConcurrentHashMap<Path, CachedPackages> packageCache = new ConcurrentHashMap<>();
 
-  private record CachedPackages(long stamp, List<String> names) {
-  }
+  private record CachedPackages(long stamp, List<String> names) {}
 
-  public record KnowledgeMetamodel(String name, String label) {
-  }
+  public record KnowledgeMetamodel(String name, String label) {}
 
   public List<KnowledgeMetamodel> listAvailable() {
     return listAvailable(Path.of(vsumProperties.vsumProvidersDir()));
@@ -48,15 +44,12 @@ public class KnowledgeMetamodelCatalog {
     if (providerName == null || providerName.isBlank()) {
       return List.of();
     }
-    Path ecoreDir = Path.of(vsumProperties.vsumProvidersDir())
-        .resolve(providerName)
-        .resolve("ecore-models");
+    Path ecoreDir =
+        Path.of(vsumProperties.vsumProvidersDir()).resolve(providerName).resolve("ecore-models");
     return cachedPackageNames(ecoreDir);
   }
 
-  /**
-   * Canonical catalog name for a requested name, or null when it is not a known package.
-   */
+  /** Canonical catalog name for a requested name, or null when it is not a known package. */
   public String canonicalName(String requested) {
     if (requested == null || requested.isBlank()) {
       return null;
@@ -75,13 +68,15 @@ public class KnowledgeMetamodelCatalog {
       return List.of();
     }
     try (Stream<Path> providers = Files.list(providersDir)) {
-      providers.filter(Files::isDirectory)
+      providers
+          .filter(Files::isDirectory)
           .sorted(Comparator.comparing(path -> path.getFileName().toString()))
-          .forEach(provider -> {
-            for (String name : cachedPackageNames(provider.resolve("ecore-models"))) {
-              byName.putIfAbsent(name, new KnowledgeMetamodel(name, labelFor(name)));
-            }
-          });
+          .forEach(
+              provider -> {
+                for (String name : cachedPackageNames(provider.resolve("ecore-models"))) {
+                  byName.putIfAbsent(name, new KnowledgeMetamodel(name, labelFor(name)));
+                }
+              });
     } catch (IOException e) {
       return List.of();
     }
@@ -123,19 +118,19 @@ public class KnowledgeMetamodelCatalog {
     return names;
   }
 
-  /**
-   * Changes when an ecore file is added, removed, or rewritten, which refreshes the cache.
-   */
+  /** Changes when an ecore file is added, removed, or rewritten, which refreshes the cache. */
   private static long directoryStamp(Path ecoreDir) {
     if (!Files.isDirectory(ecoreDir)) {
       return 0L;
     }
     long stamp = 17L;
     try (Stream<Path> files = Files.list(ecoreDir)) {
-      List<Path> ecoreFiles = files.filter(Files::isRegularFile)
-          .filter(path -> path.getFileName().toString().endsWith(".ecore"))
-          .sorted(Comparator.comparing(path -> path.getFileName().toString()))
-          .toList();
+      List<Path> ecoreFiles =
+          files
+              .filter(Files::isRegularFile)
+              .filter(path -> path.getFileName().toString().endsWith(".ecore"))
+              .sorted(Comparator.comparing(path -> path.getFileName().toString()))
+              .toList();
       for (Path file : ecoreFiles) {
         stamp = stamp * 31 + file.getFileName().toString().hashCode();
         stamp = stamp * 31 + Files.getLastModifiedTime(file).toMillis();
@@ -152,7 +147,8 @@ public class KnowledgeMetamodelCatalog {
       return List.of();
     }
     try (Stream<Path> files = Files.list(ecoreDir)) {
-      return files.filter(Files::isRegularFile)
+      return files
+          .filter(Files::isRegularFile)
           .filter(path -> path.getFileName().toString().endsWith(".ecore"))
           .sorted(Comparator.comparing(path -> path.getFileName().toString()))
           .map(KnowledgeMetamodelCatalog::readPackageNameFromFile)

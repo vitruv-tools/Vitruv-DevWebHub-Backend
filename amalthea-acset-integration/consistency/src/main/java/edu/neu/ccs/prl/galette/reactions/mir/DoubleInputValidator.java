@@ -4,7 +4,7 @@ import tools.vitruv.change.interaction.UserInteractionOptions.InputValidator;
 
 public class DoubleInputValidator implements InputValidator {
 
-  public static DoubleInputValidator getDoubleInputValidatorInstance(){
+  public static DoubleInputValidator getDoubleInputValidatorInstance() {
     return new DoubleInputValidator();
   }
 

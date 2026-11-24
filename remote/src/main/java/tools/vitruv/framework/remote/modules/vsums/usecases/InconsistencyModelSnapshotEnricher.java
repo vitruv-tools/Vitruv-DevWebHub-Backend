@@ -4,29 +4,29 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
- * Ensures hub model snapshots include the entity named in a parked inconsistency message
- * (e.g. a newly inserted Entity awaiting component-type selection).
+ * Ensures hub model snapshots include the entity named in a parked inconsistency message (e.g. a
+ * newly inserted Entity awaiting component-type selection).
  */
 @Component
 @RequiredArgsConstructor
 public class InconsistencyModelSnapshotEnricher {
 
-  private static final Pattern NAMED_ENTITY_PATTERN = Pattern.compile(
-      "(?:entity|component)\\s+['\"]([^'\"]+)['\"]",
-      Pattern.CASE_INSENSITIVE
-  );
+  private static final Pattern NAMED_ENTITY_PATTERN =
+      Pattern.compile("(?:entity|component)\\s+['\"]([^'\"]+)['\"]", Pattern.CASE_INSENSITIVE);
 
   private final ObjectMapper objectMapper;
 
   public String enrich(String encodedResourceSet, String message) {
-    if (encodedResourceSet == null || encodedResourceSet.isBlank() || message == null || message.isBlank()) {
+    if (encodedResourceSet == null
+        || encodedResourceSet.isBlank()
+        || message == null
+        || message.isBlank()) {
       return encodedResourceSet;
     }
 

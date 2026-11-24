@@ -12,7 +12,8 @@ public interface AppUserRepo extends BaseRepo<AppUser> {
   List<AppUser> findAllByOrderByUsernameAsc();
 
   /** Everyone who selected the given metamodel in their settings, sorted by username. */
-  @Query("select distinct u from AppUser u join u.metamodels m "
-      + "where m.metamodelName = :metamodelName order by u.username asc")
+  @Query(
+      "select distinct u from AppUser u join u.metamodels m "
+          + "where m.metamodelName = :metamodelName order by u.username asc")
   List<AppUser> findAllKnowingMetamodel(@Param("metamodelName") String metamodelName);
 }

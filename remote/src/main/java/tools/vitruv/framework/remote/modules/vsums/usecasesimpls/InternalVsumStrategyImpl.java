@@ -1,5 +1,6 @@
 package tools.vitruv.framework.remote.modules.vsums.usecasesimpls;
 
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.springframework.stereotype.Component;
@@ -8,29 +9,24 @@ import tools.vitruv.framework.remote.modules.vsums.model.wrapper.VsumWrapper;
 import tools.vitruv.framework.remote.modules.vsums.usecases.strategies.VsumUseCasesStrategy;
 import tools.vitruv.framework.views.ViewType;
 
-import java.util.UUID;
-
 /**
- * An implementation of the {@link VsumUseCasesStrategy} interface that provides
- * functionalities related to VSUM operations. This class interacts with the
- * {@link VsumManager} to manage the lifecycle of Virtualized Service Utility Models (VSUMs).
- * <p>
- * This implementation focuses on retrieving view types and supporting the deletion
- * of VSUM instances. It ensures that the associated VSUM data is managed effectively
- * via the {@link VsumManager}.
- * <p>
- * The primary responsibilities of this class include:
- * - Fetching view types associated with a VSUM.
- * - Deleting a VSUM instance.
+ * An implementation of the {@link VsumUseCasesStrategy} interface that provides functionalities
+ * related to VSUM operations. This class interacts with the {@link VsumManager} to manage the
+ * lifecycle of Virtualized Service Utility Models (VSUMs).
+ *
+ * <p>This implementation focuses on retrieving view types and supporting the deletion of VSUM
+ * instances. It ensures that the associated VSUM data is managed effectively via the {@link
+ * VsumManager}.
+ *
+ * <p>The primary responsibilities of this class include: - Fetching view types associated with a
+ * VSUM. - Deleting a VSUM instance.
  */
 @Component
 @RequiredArgsConstructor
 public class InternalVsumStrategyImpl implements VsumUseCasesStrategy {
   private final VsumManager vsumManager;
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public String[] getViewTypes(UUID vsumId) {
     val vsumWrapper = getVsumOrThrow(vsumId);
@@ -40,9 +36,7 @@ public class InternalVsumStrategyImpl implements VsumUseCasesStrategy {
         .toArray(String[]::new);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public void deleteVsum(UUID vsumId) {
     vsumManager.deleteVsum(vsumId);

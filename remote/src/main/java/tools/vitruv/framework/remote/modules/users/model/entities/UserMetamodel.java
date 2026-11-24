@@ -10,14 +10,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import tools.vitruv.framework.remote.common.entities.BaseEntity;
 
-/**
- * One metamodel a user knows, such as {@code amalthea} or {@code ascet}.
- */
+/** One metamodel a user knows, such as {@code amalthea} or {@code ascet}. */
 @Entity
 @Table(
     name = "user-metamodels",
-    uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "metamodel_name"})
-)
+    uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "metamodel_name"}))
 @NoArgsConstructor
 @Getter
 @Setter

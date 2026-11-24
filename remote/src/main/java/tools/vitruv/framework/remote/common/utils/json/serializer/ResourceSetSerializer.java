@@ -3,15 +3,12 @@ package tools.vitruv.framework.remote.common.utils.json.serializer;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import java.io.IOException;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import tools.vitruv.framework.remote.common.utils.json.IdTransformation;
 import tools.vitruv.framework.remote.common.utils.json.JsonFieldName;
 
-import java.io.IOException;
-
-/**
- * A serializer for {@link ResourceSet}.
- */
+/** A serializer for {@link ResourceSet}. */
 public class ResourceSetSerializer extends JsonSerializer<ResourceSet> {
   private final IdTransformation transformation;
 

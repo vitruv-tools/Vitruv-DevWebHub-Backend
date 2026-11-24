@@ -6,8 +6,6 @@ import tools.vitruv.framework.remote.helper.IntegrationTest;
 @IntegrationTest
 class VitruviusServerApplicationTests {
 
-    @Test
-    void contextLoads() {
-    }
-
+  @Test
+  void contextLoads() {}
 }

@@ -1,10 +1,9 @@
 package tools.vitruv.framework.remote.modules.vsums.usecases.dtos;
 
-import tools.vitruv.framework.remote.modules.vsums.async.AsyncTaskState;
-
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
+import tools.vitruv.framework.remote.modules.vsums.async.AsyncTaskState;
 
 public record PropagationTaskStatusResponse(
     UUID taskId,
@@ -14,6 +13,4 @@ public record PropagationTaskStatusResponse(
     Instant completedAt,
     String error,
     Map<String, Object> interaction,
-    String result
-) {
-}
+    String result) {}

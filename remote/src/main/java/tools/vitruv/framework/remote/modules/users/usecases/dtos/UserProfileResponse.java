@@ -12,6 +12,4 @@ public record UserProfileResponse(
     Instant createdAt,
     Instant lastLoginAt,
     List<String> metamodels,
-    String profileToken
-) {
-}
+    String profileToken) {}

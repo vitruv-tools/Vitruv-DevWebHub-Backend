@@ -14,21 +14,21 @@ import tools.vitruv.framework.remote.modules.vsums.model.entities.VsumInfoRepo;
 @RequiredArgsConstructor
 public class TestDatabaseCleaner {
 
-    private final ViewUpdateRepo viewUpdateRepo;
-    private final VsumInfoRepo vsumInfoRepo;
-    private final InconsistencyCommentRepo inconsistencyCommentRepo;
-    private final InconsistencyCommentMentionRepo inconsistencyCommentMentionRepo;
-    private final OpenInconsistencyRepo openInconsistencyRepo;
-    private final UserMetamodelRepo userMetamodelRepo;
-    private final AppUserRepo appUserRepo;
+  private final ViewUpdateRepo viewUpdateRepo;
+  private final VsumInfoRepo vsumInfoRepo;
+  private final InconsistencyCommentRepo inconsistencyCommentRepo;
+  private final InconsistencyCommentMentionRepo inconsistencyCommentMentionRepo;
+  private final OpenInconsistencyRepo openInconsistencyRepo;
+  private final UserMetamodelRepo userMetamodelRepo;
+  private final AppUserRepo appUserRepo;
 
-    public void cleanAll() {
-        inconsistencyCommentMentionRepo.deleteAll();
-        inconsistencyCommentRepo.deleteAll();
-        openInconsistencyRepo.deleteAll();
-        viewUpdateRepo.deleteAll();
-        vsumInfoRepo.deleteAll();
-        userMetamodelRepo.deleteAll();
-        appUserRepo.deleteAll();
-    }
+  public void cleanAll() {
+    inconsistencyCommentMentionRepo.deleteAll();
+    inconsistencyCommentRepo.deleteAll();
+    openInconsistencyRepo.deleteAll();
+    viewUpdateRepo.deleteAll();
+    vsumInfoRepo.deleteAll();
+    userMetamodelRepo.deleteAll();
+    appUserRepo.deleteAll();
+  }
 }

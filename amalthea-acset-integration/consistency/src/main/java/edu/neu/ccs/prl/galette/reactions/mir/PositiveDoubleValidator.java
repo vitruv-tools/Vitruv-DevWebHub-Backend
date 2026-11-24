@@ -4,7 +4,7 @@ import tools.vitruv.change.interaction.UserInteractionOptions;
 
 public class PositiveDoubleValidator implements UserInteractionOptions.InputValidator {
 
-  public static PositiveDoubleValidator getPositiveDoubleValidatorInstance(){
+  public static PositiveDoubleValidator getPositiveDoubleValidatorInstance() {
     return new PositiveDoubleValidator();
   }
 

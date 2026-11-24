@@ -5,9 +5,7 @@ import java.util.List;
 import java.util.UUID;
 import tools.vitruv.framework.remote.common.entities.BaseRepo;
 
-/**
- * Stores the {@code @tags} found in inconsistency comments.
- */
+/** Stores the {@code @tags} found in inconsistency comments. */
 public interface InconsistencyCommentMentionRepo extends BaseRepo<InconsistencyCommentMention> {
 
   /**

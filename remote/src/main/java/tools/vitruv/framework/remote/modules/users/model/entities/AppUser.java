@@ -5,18 +5,17 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import tools.vitruv.framework.remote.common.entities.BaseEntity;
 
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * A person who signs in to the hub. Created on first sign-in.
- * Metamodel knowledge lives in {@link UserMetamodel}, one row per metamodel.
+ * A person who signs in to the hub. Created on first sign-in. Metamodel knowledge lives in {@link
+ * UserMetamodel}, one row per metamodel.
  */
 @Entity
 @Table(name = "users")

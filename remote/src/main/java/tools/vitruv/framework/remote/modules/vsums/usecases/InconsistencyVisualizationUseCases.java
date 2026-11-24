@@ -1,5 +1,6 @@
 package tools.vitruv.framework.remote.modules.vsums.usecases;
 
+import java.util.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.ecore.EAttribute;
@@ -21,11 +22,9 @@ import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.InconsistencyCo
 import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.InconsistencyContextResponse.CorrespondenceEdge;
 import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.InconsistencyContextResponse.ModelElementNode;
 
-import java.util.*;
-
 /**
- * Builds a metamodel-agnostic element + correspondence snapshot for Hub visualization.
- * Works for SystemRoot and AmaltheaAscet by reading the VSUM's view selector and correspondence model.
+ * Builds a metamodel-agnostic element + correspondence snapshot for Hub visualization. Works for
+ * SystemRoot and AmaltheaAscet by reading the VSUM's view selector and correspondence model.
  */
 @Service
 @RequiredArgsConstructor
@@ -40,14 +39,21 @@ public class InconsistencyVisualizationUseCases {
   private final ViewService viewService;
 
   public InconsistencyContextResponse getContext(UUID inconsistencyId) {
-    OpenInconsistency entity = openInconsistencyRepo.findById(inconsistencyId).orElseThrow(() ->
-        new ResponseStatusException(HttpStatus.NOT_FOUND, "Inconsistency not found: " + inconsistencyId));
+    OpenInconsistency entity =
+        openInconsistencyRepo
+            .findById(inconsistencyId)
+            .orElseThrow(
+                () ->
+                    new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Inconsistency not found: " + inconsistencyId));
 
     // Live VSUM access can deadlock while propagation is parked on the same virtual model.
     if (entity.getState() == OpenInconsistencyState.OPEN) {
-      String metamodelName = vsumInfoRepo.findById(entity.getVsumId())
-          .map(info -> info.getMetaModelName())
-          .orElse(null);
+      String metamodelName =
+          vsumInfoRepo
+              .findById(entity.getVsumId())
+              .map(info -> info.getMetaModelName())
+              .orElse(null);
       return emptyContext(
           entity,
           metamodelName,
@@ -59,14 +65,20 @@ public class InconsistencyVisualizationUseCases {
     try {
       vsumWrapper = vsumManager.getVsum(entity.getVsumId());
     } catch (Exception e) {
-      log.warn("Could not load VSUM {} for inconsistency {}: {}", entity.getVsumId(), inconsistencyId, e.toString());
-      return emptyContext(entity, null, "VSUM could not be loaded for visualization: " + safeMessage(e));
+      log.warn(
+          "Could not load VSUM {} for inconsistency {}: {}",
+          entity.getVsumId(),
+          inconsistencyId,
+          e.toString());
+      return emptyContext(
+          entity, null, "VSUM could not be loaded for visualization: " + safeMessage(e));
     }
 
-    String viewTypeName = vsumWrapper.virtualModel().getViewTypes().stream()
-        .map(vt -> vt.getName())
-        .findFirst()
-        .orElse(null);
+    String viewTypeName =
+        vsumWrapper.virtualModel().getViewTypes().stream()
+            .map(vt -> vt.getName())
+            .findFirst()
+            .orElse(null);
     if (viewTypeName == null) {
       return emptyContext(entity, vsumWrapper.info().getMetaModelName(), "VSUM has no view types");
     }
@@ -85,7 +97,8 @@ public class InconsistencyVisualizationUseCases {
     Object correspondenceModel = null;
     try {
       Object virtualModel = vsumWrapper.virtualModel();
-      if (virtualModel instanceof tools.vitruv.framework.vsum.internal.InternalVirtualModel internal) {
+      if (virtualModel
+          instanceof tools.vitruv.framework.vsum.internal.InternalVirtualModel internal) {
         correspondenceModel = internal.getCorrespondenceModel();
       } else {
         var method = virtualModel.getClass().getMethod("getCorrespondenceModel");
@@ -107,10 +120,14 @@ public class InconsistencyVisualizationUseCases {
       }
     }
 
-    String note = elements.isEmpty()
-        ? "No selectable model elements found for view type '" + viewTypeName + "'."
-        : "Showing up to " + MAX_ELEMENTS + " elements from view type '" + viewTypeName
-        + "' with Vitruvius correspondences.";
+    String note =
+        elements.isEmpty()
+            ? "No selectable model elements found for view type '" + viewTypeName + "'."
+            : "Showing up to "
+                + MAX_ELEMENTS
+                + " elements from view type '"
+                + viewTypeName
+                + "' with Vitruvius correspondences.";
 
     return new InconsistencyContextResponse(
         entity.getId(),
@@ -120,8 +137,7 @@ public class InconsistencyVisualizationUseCases {
         viewTypeName,
         note,
         List.copyOf(elements.values()),
-        List.copyOf(edges)
-    );
+        List.copyOf(edges));
   }
 
   private void collectTree(
@@ -131,8 +147,7 @@ public class InconsistencyVisualizationUseCases {
       Map<String, ModelElementNode> elements,
       Object correspondenceModel,
       List<CorrespondenceEdge> edges,
-      Set<String> edgeKeys
-  ) {
+      Set<String> edgeKeys) {
     if (object == null || elements.size() >= MAX_ELEMENTS) {
       return;
     }
@@ -144,15 +159,16 @@ public class InconsistencyVisualizationUseCases {
     ids.put(object, id);
     String label = displayName(object);
     String metamodel = metamodelName(object);
-    elements.put(id, new ModelElementNode(
+    elements.put(
         id,
-        label,
-        object.eClass().getName(),
-        metamodel,
-        safeUri(object),
-        roleFor(metamodel),
-        parentId
-    ));
+        new ModelElementNode(
+            id,
+            label,
+            object.eClass().getName(),
+            metamodel,
+            safeUri(object),
+            roleFor(metamodel),
+            parentId));
 
     for (EObject other : correspondingObjects(correspondenceModel, object)) {
       collectTree(other, null, ids, elements, correspondenceModel, edges, edgeKeys);
@@ -179,7 +195,8 @@ public class InconsistencyVisualizationUseCases {
       return List.of();
     }
     try {
-      var method = correspondenceModel.getClass().getMethod("getCorrespondingEObjects", EObject.class);
+      var method =
+          correspondenceModel.getClass().getMethod("getCorrespondingEObjects", EObject.class);
       Object result = method.invoke(correspondenceModel, object);
       if (result instanceof Iterable<?> iterable) {
         List<EObject> objects = new ArrayList<>();
@@ -196,7 +213,8 @@ public class InconsistencyVisualizationUseCases {
     return List.of();
   }
 
-  private InconsistencyContextResponse emptyContext(OpenInconsistency entity, String metamodel, String note) {
+  private InconsistencyContextResponse emptyContext(
+      OpenInconsistency entity, String metamodel, String note) {
     return new InconsistencyContextResponse(
         entity.getId(),
         entity.getVsumId(),
@@ -205,8 +223,7 @@ public class InconsistencyVisualizationUseCases {
         null,
         note,
         List.of(),
-        List.of()
-    );
+        List.of());
   }
 
   private static String displayName(EObject object) {
@@ -230,10 +247,14 @@ public class InconsistencyVisualizationUseCases {
 
   private static String roleFor(String metamodel) {
     String normalized = metamodel == null ? "" : metamodel.toLowerCase(Locale.ROOT);
-    if (normalized.contains("amalthea") || normalized.contains("system") || normalized.equals("model")) {
+    if (normalized.contains("amalthea")
+        || normalized.contains("system")
+        || normalized.equals("model")) {
       return "source";
     }
-    if (normalized.contains("ascet") || normalized.contains("root") || normalized.contains("model2")) {
+    if (normalized.contains("ascet")
+        || normalized.contains("root")
+        || normalized.contains("model2")) {
       return "target";
     }
     return "context";

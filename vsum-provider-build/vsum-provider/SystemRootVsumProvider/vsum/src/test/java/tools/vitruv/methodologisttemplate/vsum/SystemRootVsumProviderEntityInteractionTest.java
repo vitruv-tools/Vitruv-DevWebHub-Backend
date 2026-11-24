@@ -1,5 +1,10 @@
 package tools.vitruv.methodologisttemplate.vsum;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Consumer;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
@@ -18,12 +23,6 @@ import tools.vitruv.methodologisttemplate.model.model.impl.ModelFactoryImpl;
 import tools.vitruv.methodologisttemplate.model.model2.Model2Factory;
 import tools.vitruv.methodologisttemplate.model.model2.Root;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Collection;
-import java.util.List;
-import java.util.function.Consumer;
-
 /**
  * Uses the real {@link SystemRootVsumProvider} initializer (including Root URI setup) and simulates
  * a server JVM whose working directory differs from vsum-storage.
@@ -32,12 +31,14 @@ class SystemRootVsumProviderEntityInteractionTest {
 
   @BeforeAll
   static void setup() {
-    Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put("*", new XMIResourceFactoryImpl());
+    Resource.Factory.Registry.INSTANCE
+        .getExtensionToFactoryMap()
+        .put("*", new XMIResourceFactoryImpl());
   }
 
   @Test
-  void entityInsertPromptsAndRootIsStoredInVsumStorage(@TempDir Path vsumStorage, @TempDir Path serverCwd)
-      throws Exception {
+  void entityInsertPromptsAndRootIsStoredInVsumStorage(
+      @TempDir Path vsumStorage, @TempDir Path serverCwd) throws Exception {
     TestUserInteraction interactions = new TestUserInteraction();
     interactions.onNextMultipleChoiceSingleSelection().respondWithChoiceAt(1);
 
@@ -45,11 +46,14 @@ class SystemRootVsumProviderEntityInteractionTest {
     try {
       java.lang.System.setProperty("user.dir", serverCwd.toString());
 
-      InternalVirtualModel vsum = (InternalVirtualModel) new SystemRootVsumProvider()
-          .getInitializer(vsumStorage, new TestUserInteraction.ResultProvider(interactions))
-          .init();
+      InternalVirtualModel vsum =
+          (InternalVirtualModel)
+              new SystemRootVsumProvider()
+                  .getInitializer(vsumStorage, new TestUserInteraction.ResultProvider(interactions))
+                  .init();
 
-      Root root = getDefaultView(vsum, List.of(Root.class)).getRootObjects(Root.class).iterator().next();
+      Root root =
+          getDefaultView(vsum, List.of(Root.class)).getRootObjects(Root.class).iterator().next();
       URI rootUri = root.eResource().getURI();
       String expectedBase = vsumStorage.toAbsolutePath().toString().replace('\\', '/');
       Assertions.assertEquals(
@@ -60,11 +64,13 @@ class SystemRootVsumProviderEntityInteractionTest {
           Files.exists(vsumStorage.resolve("example.model2")),
           "example.model2 should exist in vsum-storage");
 
-      modifyView(getDefaultView(vsum, List.of(Root.class)).withChangeDerivingTrait(), view -> {
-        var entity = Model2Factory.eINSTANCE.createEntity();
-        entity.setName("myEntity");
-        view.getRootObjects(Root.class).iterator().next().getEntities().add(entity);
-      });
+      modifyView(
+          getDefaultView(vsum, List.of(Root.class)).withChangeDerivingTrait(),
+          view -> {
+            var entity = Model2Factory.eINSTANCE.createEntity();
+            entity.setName("myEntity");
+            view.getRootObjects(Root.class).iterator().next().getEntities().add(entity);
+          });
 
       tools.vitruv.methodologisttemplate.model.model.System system =
           getDefaultView(vsum, List.of(tools.vitruv.methodologisttemplate.model.model.System.class))
@@ -85,15 +91,18 @@ class SystemRootVsumProviderEntityInteractionTest {
   }
 
   private static View getDefaultView(VirtualModel vsum, Collection<Class<?>> rootTypes) {
-    var selector = vsum.createSelector(ViewTypeFactory.createIdentityMappingViewType(
-        "default", ModelFactoryImpl.init().getModelPackage()));
+    var selector =
+        vsum.createSelector(
+            ViewTypeFactory.createIdentityMappingViewType(
+                "default", ModelFactoryImpl.init().getModelPackage()));
     selector.getSelectableElements().stream()
         .filter(element -> rootTypes.stream().anyMatch(it -> it.isInstance(element)))
         .forEach(it -> selector.setSelected(it, true));
     return selector.createView();
   }
 
-  private static void modifyView(CommittableView view, Consumer<CommittableView> modificationFunction) {
+  private static void modifyView(
+      CommittableView view, Consumer<CommittableView> modificationFunction) {
     modificationFunction.accept(view);
     view.commitChanges();
   }

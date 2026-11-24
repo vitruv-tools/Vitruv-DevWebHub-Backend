@@ -1,5 +1,6 @@
 package tools.vitruv.framework.remote.modules.vsums.usecases;
 
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import tools.vitruv.framework.remote.modules.vsums.model.entities.VsumInfo;
@@ -8,8 +9,6 @@ import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.CreateVsumReque
 import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.UpdateVsumInfoRequestBody;
 import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.VsumInfoResponseBody;
 
-import java.util.UUID;
-
 @Component
 @RequiredArgsConstructor
 public class VsumInfoUseCases {
@@ -17,12 +16,13 @@ public class VsumInfoUseCases {
 
   public VsumInfoResponseBody[] getVsumInfos() {
     return vsumInfoRepo.findAll().stream()
-        .map(vsumInfo -> new VsumInfoResponseBody(
-            vsumInfo.getId(),
-            vsumInfo.getMetaModelName(),
-            vsumInfo.getName(),
-            vsumInfo.getDescription()
-        ))
+        .map(
+            vsumInfo ->
+                new VsumInfoResponseBody(
+                    vsumInfo.getId(),
+                    vsumInfo.getMetaModelName(),
+                    vsumInfo.getName(),
+                    vsumInfo.getDescription()))
         .toArray(VsumInfoResponseBody[]::new);
   }
 
@@ -32,8 +32,10 @@ public class VsumInfoUseCases {
   }
 
   public VsumInfoResponseBody updateVsumInfo(UUID vsumId, UpdateVsumInfoRequestBody body) {
-    VsumInfo info = vsumInfoRepo.findById(vsumId)
-        .orElseThrow(() -> new IllegalArgumentException("Vsum not found: " + vsumId));
+    VsumInfo info =
+        vsumInfoRepo
+            .findById(vsumId)
+            .orElseThrow(() -> new IllegalArgumentException("Vsum not found: " + vsumId));
 
     info.setName(body.name());
     info.setDescription(body.description());
@@ -47,7 +49,6 @@ public class VsumInfoUseCases {
         savedInfo.getId(),
         savedInfo.getMetaModelName(),
         savedInfo.getName(),
-        savedInfo.getDescription()
-    );
+        savedInfo.getDescription());
   }
 }

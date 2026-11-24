@@ -3,6 +3,8 @@ package tools.vitruv.framework.remote.modules.vsums.usecases;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.Instant;
+import java.util.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -17,9 +19,6 @@ import tools.vitruv.framework.remote.modules.vsums.model.manager.ViewManager;
 import tools.vitruv.framework.remote.modules.vsums.model.services.ViewService;
 import tools.vitruv.framework.remote.modules.vsums.model.wrapper.ViewWrapper;
 import tools.vitruv.framework.remote.modules.vsums.usecases.dtos.*;
-
-import java.time.Instant;
-import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -45,7 +44,9 @@ public class InconsistencyUseCases {
   public List<OpenInconsistencyResponse> list(String state) {
     reconcileStaleOpenInconsistencies();
     if (state == null || state.isBlank() || "OPEN".equalsIgnoreCase(state)) {
-      return openInconsistencyRepo.findByStateOrderByCreatedAtDesc(OpenInconsistencyState.OPEN).stream()
+      return openInconsistencyRepo
+          .findByStateOrderByCreatedAtDesc(OpenInconsistencyState.OPEN)
+          .stream()
           .map(this::toResponse)
           .toList();
     }
@@ -76,17 +77,20 @@ public class InconsistencyUseCases {
       UUID viewId,
       String title,
       String message,
-      Map<String, Object> interaction
-  ) {
-    openInconsistencyRepo.findByVsumIdAndState(vsumId, OpenInconsistencyState.OPEN).ifPresent(existing -> {
-      if (!existing.getTaskId().equals(taskId)) {
-        throw new ResponseStatusException(
-            HttpStatus.CONFLICT,
-            "VSUM already has an open inconsistency (task " + existing.getTaskId() + ")");
-      }
-    });
+      Map<String, Object> interaction) {
+    openInconsistencyRepo
+        .findByVsumIdAndState(vsumId, OpenInconsistencyState.OPEN)
+        .ifPresent(
+            existing -> {
+              if (!existing.getTaskId().equals(taskId)) {
+                throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "VSUM already has an open inconsistency (task " + existing.getTaskId() + ")");
+              }
+            });
 
-    var existingForTask = openInconsistencyRepo.findByTaskIdAndState(taskId, OpenInconsistencyState.OPEN);
+    var existingForTask =
+        openInconsistencyRepo.findByTaskIdAndState(taskId, OpenInconsistencyState.OPEN);
     if (existingForTask.isPresent()) {
       return existingForTask.get();
     }
@@ -105,34 +109,43 @@ public class InconsistencyUseCases {
   }
 
   public boolean hasOpenForVsum(UUID vsumId) {
-    return openInconsistencyRepo.findByVsumIdAndState(vsumId, OpenInconsistencyState.OPEN).isPresent();
+    return openInconsistencyRepo
+        .findByVsumIdAndState(vsumId, OpenInconsistencyState.OPEN)
+        .isPresent();
   }
 
   public void markResolvedByTaskId(UUID taskId) {
-    openInconsistencyRepo.findByTaskIdAndState(taskId, OpenInconsistencyState.OPEN).ifPresent(entity -> {
-      entity.setState(OpenInconsistencyState.RESOLVED);
-      entity.setResolvedAt(Instant.now());
-      openInconsistencyRepo.save(entity);
-    });
+    openInconsistencyRepo
+        .findByTaskIdAndState(taskId, OpenInconsistencyState.OPEN)
+        .ifPresent(
+            entity -> {
+              entity.setState(OpenInconsistencyState.RESOLVED);
+              entity.setResolvedAt(Instant.now());
+              openInconsistencyRepo.save(entity);
+            });
   }
 
   public void markFailedByTaskId(UUID taskId, String errorMessage) {
-    openInconsistencyRepo.findByTaskIdAndState(taskId, OpenInconsistencyState.OPEN).ifPresent(entity -> {
-      entity.setState(OpenInconsistencyState.FAILED);
-      entity.setResolvedAt(Instant.now());
-      if (errorMessage != null && !errorMessage.isBlank()) {
-        entity.setMessage(errorMessage);
-      }
-      openInconsistencyRepo.save(entity);
-    });
+    openInconsistencyRepo
+        .findByTaskIdAndState(taskId, OpenInconsistencyState.OPEN)
+        .ifPresent(
+            entity -> {
+              entity.setState(OpenInconsistencyState.FAILED);
+              entity.setResolvedAt(Instant.now());
+              if (errorMessage != null && !errorMessage.isBlank()) {
+                entity.setMessage(errorMessage);
+              }
+              openInconsistencyRepo.save(entity);
+            });
   }
 
   /**
-   * Propagation tasks live in memory only. After a server restart, OPEN rows may reference
-   * tasks that no longer exist and cannot be resolved from the hub.
+   * Propagation tasks live in memory only. After a server restart, OPEN rows may reference tasks
+   * that no longer exist and cannot be resolved from the hub.
    */
   private void reconcileStaleOpenInconsistencies() {
-    for (OpenInconsistency entity : openInconsistencyRepo.findByStateOrderByCreatedAtDesc(OpenInconsistencyState.OPEN)) {
+    for (OpenInconsistency entity :
+        openInconsistencyRepo.findByStateOrderByCreatedAtDesc(OpenInconsistencyState.OPEN)) {
       if (!taskRegistry.taskExists(entity.getTaskId())) {
         markFailedByTaskId(
             entity.getTaskId(),
@@ -150,8 +163,8 @@ public class InconsistencyUseCases {
       return List.of();
     }
     Map<UUID, List<InconsistencyCommentMention>> mentionsByComment = new HashMap<>();
-    for (InconsistencyCommentMention row : inconsistencyCommentMentionRepo
-        .findByCommentIdInOrderByCommentIdAscPositionAsc(
+    for (InconsistencyCommentMention row :
+        inconsistencyCommentMentionRepo.findByCommentIdInOrderByCommentIdAscPositionAsc(
             comments.stream().map(InconsistencyComment::getId).toList())) {
       mentionsByComment.computeIfAbsent(row.getCommentId(), id -> new ArrayList<>()).add(row);
     }
@@ -171,11 +184,13 @@ public class InconsistencyUseCases {
               mention.kind(), mention.name(), mention.label(), mention.users()));
     }
     return comments.stream()
-        .map(comment -> toCommentResponse(
-            comment,
-            mentionsByComment.getOrDefault(comment.getId(), List.of()).stream()
-                .map(row -> resolved.get(toMention(row)))
-                .toList()))
+        .map(
+            comment ->
+                toCommentResponse(
+                    comment,
+                    mentionsByComment.getOrDefault(comment.getId(), List.of()).stream()
+                        .map(row -> resolved.get(toMention(row)))
+                        .toList()))
         .toList();
   }
 
@@ -187,26 +202,25 @@ public class InconsistencyUseCases {
    * @return the saved comment with its resolved tags
    */
   @Transactional
-  public InconsistencyCommentResponse addComment(UUID inconsistencyId, CreateInconsistencyCommentRequest request) {
+  public InconsistencyCommentResponse addComment(
+      UUID inconsistencyId, CreateInconsistencyCommentRequest request) {
     getEntityOrThrow(inconsistencyId);
     if (request == null || request.body() == null || request.body().isBlank()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Comment body is required");
     }
-    String author = request.author() != null && !request.author().isBlank()
-        ? request.author().trim()
-        : "anonymous";
+    String author =
+        request.author() != null && !request.author().isBlank()
+            ? request.author().trim()
+            : "anonymous";
     return saveComment(inconsistencyId, author, request.body().trim());
   }
 
   /**
-   * Stores a comment and its tags. Every path that writes a comment goes through here, so a tag
-   * in the text is always stored apart from it. Tags are parsed here, not in the browser.
+   * Stores a comment and its tags. Every path that writes a comment goes through here, so a tag in
+   * the text is always stored apart from it. Tags are parsed here, not in the browser.
    */
   private InconsistencyCommentResponse saveComment(
-      UUID inconsistencyId,
-      String author,
-      String body
-  ) {
+      UUID inconsistencyId, String author, String body) {
     InconsistencyComment comment = new InconsistencyComment();
     comment.setInconsistencyId(inconsistencyId);
     comment.setAuthor(author);
@@ -226,11 +240,15 @@ public class InconsistencyUseCases {
       rows.add(row);
     }
     List<InconsistencyCommentMention> savedRows = inconsistencyCommentMentionRepo.saveAll(rows);
-    List<CommentMentionResponse> responses = mentionService
-        .resolve(savedRows.stream().map(InconsistencyUseCases::toMention).toList()).stream()
-        .map(mention -> new CommentMentionResponse(
-            mention.kind(), mention.name(), mention.label(), mention.users()))
-        .toList();
+    List<CommentMentionResponse> responses =
+        mentionService
+            .resolve(savedRows.stream().map(InconsistencyUseCases::toMention).toList())
+            .stream()
+            .map(
+                mention ->
+                    new CommentMentionResponse(
+                        mention.kind(), mention.name(), mention.label(), mention.users()))
+            .toList();
     return toCommentResponse(saved, responses);
   }
 
@@ -254,9 +272,7 @@ public class InconsistencyUseCases {
    */
   @Transactional
   public OpenInconsistencyResponse recordResolution(
-      UUID inconsistencyId,
-      RecordInconsistencyResolutionRequest request
-  ) {
+      UUID inconsistencyId, RecordInconsistencyResolutionRequest request) {
     OpenInconsistency entity = getEntityOrThrow(inconsistencyId);
     if (request == null || request.resolvedBy() == null || request.resolvedBy().isBlank()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "resolvedBy is required");
@@ -287,9 +303,9 @@ public class InconsistencyUseCases {
   }
 
   /**
-   * Returns the model resource set for hub visualization.
-   * For OPEN inconsistencies, prefers the committed resource set from propagation (includes user edits),
-   * then the live parked view, then the snapshot captured at park time.
+   * Returns the model resource set for hub visualization. For OPEN inconsistencies, prefers the
+   * committed resource set from propagation (includes user edits), then the live parked view, then
+   * the snapshot captured at park time.
    */
   public InconsistencyModelSnapshotResponse getModelSnapshot(UUID inconsistencyId) {
     OpenInconsistency entity = getEntityOrThrow(inconsistencyId);
@@ -338,9 +354,12 @@ public class InconsistencyUseCases {
           "Showing model captured when this inconsistency was parked.");
     }
 
-    ViewUpdate update = viewUpdateRepo.findFirstByVsumInfoIdOrderByTimestampDesc(entity.getVsumId());
+    ViewUpdate update =
+        viewUpdateRepo.findFirstByVsumInfoIdOrderByTimestampDesc(entity.getVsumId());
 
-    if (update != null && update.getEncodedResourceSet() != null && !update.getEncodedResourceSet().isBlank()) {
+    if (update != null
+        && update.getEncodedResourceSet() != null
+        && !update.getEncodedResourceSet().isBlank()) {
       return toModelSnapshot(entity, update, "Showing latest saved view snapshot.");
     }
 
@@ -348,11 +367,13 @@ public class InconsistencyUseCases {
     if (entity.getState() == OpenInconsistencyState.OPEN) {
       throw new ResponseStatusException(
           HttpStatus.NOT_FOUND,
-          "No model snapshot for VSUM " + entity.getVsumId()
+          "No model snapshot for VSUM "
+              + entity.getVsumId()
               + ". Park the inconsistency again so the model is captured at park time.");
     }
 
-    ViewWrapper viewWrapper = entity.getViewId() != null ? viewManager.getView(entity.getViewId()) : null;
+    ViewWrapper viewWrapper =
+        entity.getViewId() != null ? viewManager.getView(entity.getViewId()) : null;
     if (viewWrapper != null && !viewWrapper.view().isClosed()) {
       try {
         String encoded = viewService.serializeResourceSet(viewWrapper);
@@ -373,21 +394,22 @@ public class InconsistencyUseCases {
 
     throw new ResponseStatusException(
         HttpStatus.NOT_FOUND,
-        "No model snapshot for VSUM " + entity.getVsumId()
+        "No model snapshot for VSUM "
+            + entity.getVsumId()
             + ". Open the editor, apply an update, then park the inconsistency again.");
   }
 
   private InconsistencyModelSnapshotResponse toModelSnapshot(
-      OpenInconsistency entity,
-      ViewUpdate update,
-      String note
-  ) {
+      OpenInconsistency entity, ViewUpdate update, String note) {
     return toModelSnapshotFromEncoded(
         entity,
         update.getEncodedResourceSet(),
         update.getViewTypeName(),
         update.getTimestamp(),
-        note + (update.getViewTypeName() != null ? " View type '" + update.getViewTypeName() + "'." : ""));
+        note
+            + (update.getViewTypeName() != null
+                ? " View type '" + update.getViewTypeName() + "'."
+                : ""));
   }
 
   private InconsistencyModelSnapshotResponse toModelSnapshotFromEncoded(
@@ -395,8 +417,7 @@ public class InconsistencyUseCases {
       String encodedResourceSet,
       String viewTypeName,
       Instant snapshotTimestamp,
-      String note
-  ) {
+      String note) {
     if (encodedResourceSet == null || encodedResourceSet.isBlank()) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Model snapshot is empty");
     }
@@ -406,9 +427,8 @@ public class InconsistencyUseCases {
       enriched = encodedResourceSet;
     }
 
-    String metamodelName = vsumInfoRepo.findById(entity.getVsumId())
-        .map(VsumInfo::getMetaModelName)
-        .orElse(null);
+    String metamodelName =
+        vsumInfoRepo.findById(entity.getVsumId()).map(VsumInfo::getMetaModelName).orElse(null);
 
     return new InconsistencyModelSnapshotResponse(
         entity.getId(),
@@ -418,12 +438,12 @@ public class InconsistencyUseCases {
         viewTypeName,
         snapshotTimestamp,
         note + (viewTypeName != null ? " View type '" + viewTypeName + "'." : ""),
-        enriched
-    );
+        enriched);
   }
 
   private String resolveViewTypeName(OpenInconsistency entity) {
-    if (entity.getModelSnapshotViewTypeName() != null && !entity.getModelSnapshotViewTypeName().isBlank()) {
+    if (entity.getModelSnapshotViewTypeName() != null
+        && !entity.getModelSnapshotViewTypeName().isBlank()) {
       return entity.getModelSnapshotViewTypeName();
     }
     if (entity.getViewId() == null) {
@@ -437,8 +457,12 @@ public class InconsistencyUseCases {
   }
 
   private OpenInconsistency getEntityOrThrow(UUID id) {
-    return openInconsistencyRepo.findById(id).orElseThrow(() ->
-        new ResponseStatusException(HttpStatus.NOT_FOUND, "Inconsistency not found: " + id));
+    return openInconsistencyRepo
+        .findById(id)
+        .orElseThrow(
+            () ->
+                new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Inconsistency not found: " + id));
   }
 
   private OpenInconsistencyState parseState(String state) {
@@ -452,9 +476,8 @@ public class InconsistencyUseCases {
   }
 
   private OpenInconsistencyResponse toResponse(OpenInconsistency entity) {
-    String metamodelName = vsumInfoRepo.findById(entity.getVsumId())
-        .map(VsumInfo::getMetaModelName)
-        .orElse(null);
+    String metamodelName =
+        vsumInfoRepo.findById(entity.getVsumId()).map(VsumInfo::getMetaModelName).orElse(null);
     return new OpenInconsistencyResponse(
         entity.getId(),
         entity.getVsumId(),
@@ -471,8 +494,7 @@ public class InconsistencyUseCases {
         entity.getResolvedBy(),
         entity.getResolutionChoice(),
         entity.getResolutionComment(),
-        involvedMetamodels(metamodelName)
-    );
+        involvedMetamodels(metamodelName));
   }
 
   private List<String> involvedMetamodels(String providerName) {
@@ -484,17 +506,14 @@ public class InconsistencyUseCases {
   }
 
   private InconsistencyCommentResponse toCommentResponse(
-      InconsistencyComment comment,
-      List<CommentMentionResponse> mentionResponses
-  ) {
+      InconsistencyComment comment, List<CommentMentionResponse> mentionResponses) {
     return new InconsistencyCommentResponse(
         comment.getId(),
         comment.getInconsistencyId(),
         comment.getAuthor(),
         comment.getBody(),
         comment.getCreatedAt(),
-        mentionResponses
-    );
+        mentionResponses);
   }
 
   private ViewUpdateSummaryResponse toViewUpdateSummary(ViewUpdate update) {
@@ -507,8 +526,7 @@ public class InconsistencyUseCases {
             ? update.getSelectedObjectEClassNames()
             : List.of(),
         update.getTimestamp(),
-        encoded != null ? encoded.length() : 0
-    );
+        encoded != null ? encoded.length() : 0);
   }
 
   private String writeInteractionJson(Map<String, Object> interaction) {
@@ -518,7 +536,8 @@ public class InconsistencyUseCases {
     try {
       return objectMapper.writeValueAsString(interaction);
     } catch (JsonProcessingException e) {
-      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to store interaction JSON");
+      throw new ResponseStatusException(
+          HttpStatus.INTERNAL_SERVER_ERROR, "Failed to store interaction JSON");
     }
   }
 
@@ -527,8 +546,7 @@ public class InconsistencyUseCases {
       return Collections.emptyMap();
     }
     try {
-      return objectMapper.readValue(json, new TypeReference<>() {
-      });
+      return objectMapper.readValue(json, new TypeReference<>() {});
     } catch (JsonProcessingException e) {
       return Collections.emptyMap();
     }

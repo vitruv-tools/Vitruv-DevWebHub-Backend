@@ -25,22 +25,20 @@ import tools.vitruv.framework.remote.modules.users.model.services.KnowledgeMetam
 /**
  * Finds {@code @tags} in comment text and resolves them to users.
  *
- * <p>A tag is only recognised when it matches a real username or a known metamodel name,
- * so {@code @} in an email address or an unknown word is ignored. Matching ignores case.
- * Usernames are unique across users and metamodels, so a tag is never ambiguous. A tag on a
- * metamodel stands for every user who knows that metamodel.
+ * <p>A tag is only recognised when it matches a real username or a known metamodel name, so
+ * {@code @} in an email address or an unknown word is ignored. Matching ignores case. Usernames are
+ * unique across users and metamodels, so a tag is never ambiguous. A tag on a metamodel stands for
+ * every user who knows that metamodel.
  */
 @Service
 @RequiredArgsConstructor
 public class MentionService {
 
   /** A tag as written in a comment. {@code name} is the canonical username or metamodel name. */
-  public record Mention(MentionKind kind, String name) {
-  }
+  public record Mention(MentionKind kind, String name) {}
 
   /** A tag together with its label and the usernames it reaches today. */
-  public record ResolvedMention(MentionKind kind, String name, String label, List<String> users) {
-  }
+  public record ResolvedMention(MentionKind kind, String name, String label, List<String> users) {}
 
   /**
    * How long the metamodel half of the index is trusted. Metamodels come from files that change
@@ -63,9 +61,7 @@ public class MentionService {
       Map<String, String> metamodelLabels,
       Pattern pattern,
       long generation,
-      long builtAtNanos
-  ) {
-  }
+      long builtAtNanos) {}
 
   private final AppUserRepo appUserRepo;
   private final KnowledgeMetamodelCatalog knowledgeMetamodelCatalog;
@@ -84,12 +80,13 @@ public class MentionService {
    */
   public void invalidate() {
     if (TransactionSynchronizationManager.isSynchronizationActive()) {
-      TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-        @Override
-        public void afterCommit() {
-          invalidateNow();
-        }
-      });
+      TransactionSynchronizationManager.registerSynchronization(
+          new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+              invalidateNow();
+            }
+          });
     } else {
       invalidateNow();
     }
@@ -99,9 +96,7 @@ public class MentionService {
     generation.incrementAndGet();
   }
 
-  /**
-   * Tags in {@code text}, in order of first appearance, without duplicates.
-   */
+  /** Tags in {@code text}, in order of first appearance, without duplicates. */
   public List<Mention> parse(String text) {
     if (text == null || text.indexOf('@') < 0) {
       return List.of();
@@ -123,8 +118,8 @@ public class MentionService {
 
   /**
    * Adds labels and the users each tag reaches. Labels come from the cached index. Who knows a
-   * metamodel is looked up here, once per metamodel in {@code mentions}, so callers should pass
-   * all tags of a request together. That keeps later changes to anyone's knowledge visible.
+   * metamodel is looked up here, once per metamodel in {@code mentions}, so callers should pass all
+   * tags of a request together. That keeps later changes to anyone's knowledge visible.
    */
   public List<ResolvedMention> resolve(Collection<Mention> mentions) {
     if (mentions.isEmpty()) {
@@ -137,8 +132,8 @@ public class MentionService {
     for (Mention mention : mentions) {
       if (mention.kind() == MentionKind.USER) {
         String label = current.userLabels().getOrDefault(key(mention.name()), mention.name());
-        resolved.add(new ResolvedMention(
-            mention.kind(), mention.name(), label, List.of(mention.name())));
+        resolved.add(
+            new ResolvedMention(mention.kind(), mention.name(), label, List.of(mention.name())));
       } else {
         List<String> users = knowledgeCache.computeIfAbsent(mention.name(), this::usernamesKnowing);
         String label = current.metamodelLabels().getOrDefault(mention.name(), mention.name());
@@ -198,8 +193,10 @@ public class MentionService {
     if (!candidates.isEmpty()) {
       // Longest names first, so "@ada.lovelace" is not read as "@ada".
       List<String> names = new ArrayList<>(candidates.keySet());
-      names.sort(Comparator.comparingInt(String::length).reversed()
-          .thenComparing(Comparator.naturalOrder()));
+      names.sort(
+          Comparator.comparingInt(String::length)
+              .reversed()
+              .thenComparing(Comparator.naturalOrder()));
       StringBuilder alternatives = new StringBuilder();
       for (String name : names) {
         if (!alternatives.isEmpty()) {
@@ -207,10 +204,10 @@ public class MentionService {
         }
         alternatives.append(Pattern.quote(name));
       }
-      pattern = Pattern.compile(
-          BEFORE_TAG + alternatives + AFTER_TAG,
-          Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
-      );
+      pattern =
+          Pattern.compile(
+              BEFORE_TAG + alternatives + AFTER_TAG,
+              Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
     }
     return new Index(
         candidates, userLabels, metamodelLabels, pattern, builtForGeneration, System.nanoTime());

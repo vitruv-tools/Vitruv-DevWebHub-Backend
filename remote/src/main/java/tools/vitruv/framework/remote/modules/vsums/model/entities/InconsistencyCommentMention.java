@@ -13,9 +13,8 @@ import tools.vitruv.framework.remote.common.entities.BaseEntity;
 import tools.vitruv.framework.remote.modules.users.model.services.MentionKind;
 
 /**
- * One {@code @tag} found in a comment when it was saved: a user or a metamodel.
- * Metamodel tags are expanded to users when read, so later changes to who knows
- * a metamodel are reflected.
+ * One {@code @tag} found in a comment when it was saved: a user or a metamodel. Metamodel tags are
+ * expanded to users when read, so later changes to who knows a metamodel are reflected.
  */
 @Entity
 @Table(name = "inconsistency-comment-mentions")
@@ -30,15 +29,15 @@ public class InconsistencyCommentMention extends BaseEntity {
   private MentionKind kind;
 
   /**
-   * Canonical username for {@link MentionKind#USER},
-   * metamodel name for {@link MentionKind#METAMODEL}.
+   * Canonical username for {@link MentionKind#USER}, metamodel name for {@link
+   * MentionKind#METAMODEL}.
    */
   private String targetName;
 
   /**
-   * First-appearance order in the comment body, starting at 0.
-   * GET uses this so {@code @alice} then {@code @model} stays in that order.
-   * Default 0 lets Hibernate add the column when older mention rows already exist.
+   * First-appearance order in the comment body, starting at 0. GET uses this so {@code @alice} then
+   * {@code @model} stays in that order. Default 0 lets Hibernate add the column when older mention
+   * rows already exist.
    */
   @Column(nullable = false, columnDefinition = "integer not null default 0")
   private int position;

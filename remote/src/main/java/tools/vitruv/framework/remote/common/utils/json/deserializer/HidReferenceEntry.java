@@ -8,9 +8,7 @@ import org.eclipse.emfcloud.jackson.handlers.URIHandler;
 import org.eclipse.emfcloud.jackson.utils.EObjects;
 import tools.vitruv.change.atomic.hid.HierarchicalId;
 
-/**
- * A {@link ReferenceEntry} for hierarchical IDs (HIDs).
- */
+/** A {@link ReferenceEntry} for hierarchical IDs (HIDs). */
 public class HidReferenceEntry implements ReferenceEntry {
   private final EObject owner;
   private final EReference reference;
@@ -19,9 +17,9 @@ public class HidReferenceEntry implements ReferenceEntry {
   /**
    * Creates a new {@link HidReferenceEntry}.
    *
-   * @param owner     the owner EObject
+   * @param owner the owner EObject
    * @param reference the EReference
-   * @param hid       the hierarchical ID as a string
+   * @param hid the hierarchical ID as a string
    */
   public HidReferenceEntry(EObject owner, EReference reference, String hid) {
     this.owner = owner;

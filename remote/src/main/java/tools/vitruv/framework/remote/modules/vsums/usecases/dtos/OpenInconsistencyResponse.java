@@ -1,11 +1,10 @@
 package tools.vitruv.framework.remote.modules.vsums.usecases.dtos;
 
-import tools.vitruv.framework.remote.modules.vsums.model.entities.OpenInconsistencyState;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import tools.vitruv.framework.remote.modules.vsums.model.entities.OpenInconsistencyState;
 
 public record OpenInconsistencyResponse(
     UUID id,
@@ -23,6 +22,4 @@ public record OpenInconsistencyResponse(
     String resolvedBy,
     String resolutionChoice,
     String resolutionComment,
-    List<String> involvedMetamodels
-) {
-}
+    List<String> involvedMetamodels) {}

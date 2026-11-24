@@ -4,11 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "app.propagation")
 public record PropagationProperties(
-    int corePoolSize,
-    int maxPoolSize,
-    int queueCapacity,
-    int taskTtlHours
-) {
+    int corePoolSize, int maxPoolSize, int queueCapacity, int taskTtlHours) {
   public PropagationProperties {
     if (corePoolSize <= 0) {
       corePoolSize = 2;
