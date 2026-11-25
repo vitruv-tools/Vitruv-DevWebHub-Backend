@@ -64,9 +64,7 @@ public class UserProfileUseCases {
     }
     AppUser user = existing.get();
     if (tokenMatches(user, presentedToken)) {
-      applySignInFields(user, request, username, now);
-      mentionService.invalidate();
-      return toResponse(appUserRepo.save(user), presentedToken);
+      return toResponse(saveSignIn(user, request, username, now), presentedToken);
     }
     if (isSharedDemo(username)) {
       return saveWithNewToken(user, request, username, now);
@@ -82,24 +80,39 @@ public class UserProfileUseCases {
   ) {
     String issued = newToken();
     user.setProfileTokenHash(hash(issued));
-    applySignInFields(user, request, username, now);
-    mentionService.invalidate();
-    return toResponse(appUserRepo.save(user), issued);
+    return toResponse(saveSignIn(user, request, username, now), issued);
+  }
+
+  /** Saves the sign-in and refreshes tags only if the user is new or their label changed. */
+  private AppUser saveSignIn(AppUser user, UpsertUserRequest request, String username, Instant now) {
+    boolean labelChanged = applySignInFields(user, request, username, now);
+    AppUser saved = appUserRepo.save(user);
+    if (labelChanged) {
+      mentionService.invalidate();
+    }
+    return saved;
   }
 
   private static boolean isSharedDemo(String username) {
     return SHARED_DEMO_USERNAME.equalsIgnoreCase(username);
   }
 
-  private static void applySignInFields(
+  /**
+   * Returns whether the mention index must be rebuilt: true for a new user (no display name yet)
+   * or when the display name changed. Email and login time do not affect tags.
+   */
+  private static boolean applySignInFields(
       AppUser user,
       UpsertUserRequest request,
       String username,
       Instant now
   ) {
-    user.setDisplayName(displayName(request.displayName(), username));
+    String previousDisplayName = user.getDisplayName();
+    String newDisplayName = displayName(request.displayName(), username);
+    user.setDisplayName(newDisplayName);
     user.setEmail(blankToNull(request.email()));
     user.setLastLoginAt(now);
+    return !newDisplayName.equals(previousDisplayName);
   }
 
   /**

@@ -817,6 +817,31 @@ components:
         createdAt:
           type: "string"
           format: "date-time"
+        mentions:
+          type: "array"
+          description: "Tags found in the body, in order of first appearance, without duplicates."
+          items:
+            $ref: "#/components/schemas/CommentMentionResponse"
+
+    CommentMentionResponse:
+      type: "object"
+      description: "A tag in a comment, written as @name."
+      properties:
+        kind:
+          type: "string"
+          enum: ["USER", "METAMODEL"]
+          description: "USER tags a single user; METAMODEL tags everyone who knows that metamodel."
+        name:
+          type: "string"
+          description: "Canonical username or metamodel name, i.e. what follows the @."
+        label:
+          type: "string"
+          description: "Display name of the user, or label of the metamodel."
+        users:
+          type: "array"
+          description: "Usernames the tag reaches: the one user, or everyone who knows the metamodel."
+          items:
+            type: "string"
 
     ViewUpdateSummaryResponse:
       type: "object"
