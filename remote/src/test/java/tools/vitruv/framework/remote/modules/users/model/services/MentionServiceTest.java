@@ -2,6 +2,8 @@ package tools.vitruv.framework.remote.modules.users.model.services;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import tools.vitruv.framework.remote.modules.users.model.entities.AppUser;
 import tools.vitruv.framework.remote.modules.users.model.entities.AppUserRepo;
 import tools.vitruv.framework.remote.modules.users.model.services.KnowledgeMetamodelCatalog.KnowledgeMetamodel;
@@ -100,6 +102,38 @@ class MentionServiceTest {
         service.invalidate();
         service.parse("@ada");
         verify(appUserRepo, times(2)).findAllByOrderByUsernameAsc();
+    }
+
+    @Test
+    void insideATransactionInvalidatesOnlyAfterCommit() {
+        service.parse("@ada");
+        TransactionSynchronizationManager.initSynchronization();
+        try {
+            service.invalidate();
+            service.parse("@ada");
+            verify(appUserRepo, times(1)).findAllByOrderByUsernameAsc();
+
+            TransactionSynchronizationManager.getSynchronizations()
+                    .forEach(TransactionSynchronization::afterCommit);
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
+        service.parse("@ada");
+        verify(appUserRepo, times(2)).findAllByOrderByUsernameAsc();
+    }
+
+    @Test
+    void aRebuildThatRacedAnInvalidationIsNotReused() {
+        // The first rebuild reads the users table, then a sign-in commits and invalidates
+        // before that rebuild is cached.
+        when(appUserRepo.findAllByOrderByUsernameAsc()).thenAnswer(call -> {
+            service.invalidate();
+            return List.of(user(ADA, ADA_LOVELACE));
+        }).thenReturn(List.of(user(ADA, ADA_LOVELACE), user("alice", null)));
+
+        assertThat(service.parse("@alice please check")).isEmpty();
+        assertThat(service.parse("@alice please check"))
+                .containsExactly(new Mention(MentionKind.USER, "alice"));
     }
 
     @Test

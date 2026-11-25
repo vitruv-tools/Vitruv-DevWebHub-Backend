@@ -10,11 +10,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import tools.vitruv.framework.remote.modules.users.model.entities.AppUser;
 import tools.vitruv.framework.remote.modules.users.model.entities.AppUserRepo;
 import tools.vitruv.framework.remote.modules.users.model.services.KnowledgeMetamodelCatalog.KnowledgeMetamodel;
@@ -59,6 +62,7 @@ public class MentionService {
       Map<String, String> userLabels,
       Map<String, String> metamodelLabels,
       Pattern pattern,
+      long generation,
       long builtAtNanos
   ) {
   }
@@ -68,10 +72,31 @@ public class MentionService {
   private final AtomicReference<Index> index = new AtomicReference<>();
 
   /**
+   * Bumped on every invalidation. An index is only used while its generation is current, so a
+   * rebuild that started before an invalidation can never be served afterwards.
+   */
+  private final AtomicLong generation = new AtomicLong();
+
+  /**
    * Drops the cached index. Call this whenever a user is created or their display name changes.
+   * Inside a transaction the index is dropped only after the commit, so a rebuild cannot read the
+   * database before the change is visible and cache the old state.
    */
   public void invalidate() {
-    index.set(null);
+    if (TransactionSynchronizationManager.isSynchronizationActive()) {
+      TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+        @Override
+        public void afterCommit() {
+          invalidateNow();
+        }
+      });
+    } else {
+      invalidateNow();
+    }
+  }
+
+  private void invalidateNow() {
+    generation.incrementAndGet();
   }
 
   /**
@@ -125,15 +150,31 @@ public class MentionService {
 
   private Index currentIndex() {
     Index snapshot = index.get();
-    if (snapshot == null
-        || System.nanoTime() - snapshot.builtAtNanos() > METAMODEL_REFRESH_NANOS) {
-      snapshot = buildIndex();
-      index.set(snapshot);
+    if (snapshot != null
+        && snapshot.generation() == generation.get()
+        && System.nanoTime() - snapshot.builtAtNanos() <= METAMODEL_REFRESH_NANOS) {
+      return snapshot;
     }
-    return snapshot;
+    // Read the generation before the database: if an invalidation lands while building,
+    // the new index carries the old generation and is rebuilt on the next call.
+    Index built = buildIndex(generation.get());
+    // Never replace a newer index with an older one when two rebuilds race.
+    index.accumulateAndGet(built, MentionService::newer);
+    return built;
   }
 
-  private Index buildIndex() {
+  /** The more recent of two indexes: higher generation first, then later build time. */
+  private static Index newer(Index cached, Index candidate) {
+    if (cached == null) {
+      return candidate;
+    }
+    if (candidate.generation() != cached.generation()) {
+      return candidate.generation() > cached.generation() ? candidate : cached;
+    }
+    return candidate.builtAtNanos() - cached.builtAtNanos() > 0 ? candidate : cached;
+  }
+
+  private Index buildIndex(long builtForGeneration) {
     Map<String, Mention> candidates = new HashMap<>();
     Map<String, String> userLabels = new HashMap<>();
     for (AppUser user : appUserRepo.findAllByOrderByUsernameAsc()) {
@@ -171,7 +212,8 @@ public class MentionService {
           Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
       );
     }
-    return new Index(candidates, userLabels, metamodelLabels, pattern, System.nanoTime());
+    return new Index(
+        candidates, userLabels, metamodelLabels, pattern, builtForGeneration, System.nanoTime());
   }
 
   /** Usernames of everyone who knows the metamodel, sorted by username. */

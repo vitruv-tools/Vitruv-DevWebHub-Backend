@@ -209,16 +209,6 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <!-- application-test.yaml addresses test providers as ./remote/src/test/resources/... -->
-                    <workingDirectory>${maven.multiModuleProjectDirectory}</workingDirectory>
-                    <!-- Provider jars for the integration tests are not in the repo yet; report failures without failing the build. -->
-                    <testFailureIgnore>true</testFailureIgnore>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
