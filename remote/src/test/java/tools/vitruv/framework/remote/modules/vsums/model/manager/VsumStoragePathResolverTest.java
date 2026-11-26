@@ -43,7 +43,7 @@ class VsumStoragePathResolverTest {
 
     Path resolved = VsumStoragePathResolver.resolve(tempDir, "InteractionDemoVsum", id);
 
-    assertThat(resolved.getFileName().toString()).isEqualTo("InteractionDemoVsum-" + id);
+    assertThat(resolved.getFileName()).hasToString("InteractionDemoVsum-" + id);
     assertThat(Files.exists(resolved)).isFalse();
   }
 

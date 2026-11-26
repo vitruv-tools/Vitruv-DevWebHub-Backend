@@ -208,7 +208,7 @@ public class ViewService {
    *     changes are rejected during commitment.
    */
   @SuppressWarnings("unchecked")
-  public VitruviusChange<?> commitResourceSet(
+  public VitruviusChange<HierarchicalId> commitResourceSet(
       @NonNull ViewWrapper viewWrapper, @NonNull String encodedResourceSet) {
 
     final ResourceSet resourceSet;
