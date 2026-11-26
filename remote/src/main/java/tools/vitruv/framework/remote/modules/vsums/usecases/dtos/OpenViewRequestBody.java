@@ -17,12 +17,12 @@ public record OpenViewRequestBody(UUID vsumId, UUID selectorId, UUID[] selectedO
     if (this == other) {
       return true;
     }
-    if (!(other instanceof OpenViewRequestBody that)) {
+    if (!(other instanceof OpenViewRequestBody(var otherVsum, var otherSelector, var otherIds))) {
       return false;
     }
-    return Objects.equals(vsumId, that.vsumId)
-        && Objects.equals(selectorId, that.selectorId)
-        && Arrays.equals(selectedObjectIds, that.selectedObjectIds);
+    return Objects.equals(vsumId, otherVsum)
+        && Objects.equals(selectorId, otherSelector)
+        && Arrays.equals(selectedObjectIds, otherIds);
   }
 
   @Override

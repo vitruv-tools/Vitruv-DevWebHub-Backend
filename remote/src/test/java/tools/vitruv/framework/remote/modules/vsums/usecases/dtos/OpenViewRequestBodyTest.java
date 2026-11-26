@@ -16,8 +16,7 @@ class OpenViewRequestBodyTest {
     var first = new OpenViewRequestBody(VSUM_ID, SELECTOR_ID, new UUID[] {OBJECT_ID});
     var second = new OpenViewRequestBody(VSUM_ID, SELECTOR_ID, new UUID[] {OBJECT_ID});
 
-    assertThat(first).isEqualTo(second);
-    assertThat(first).hasSameHashCodeAs(second);
+    assertThat(first).isEqualTo(second).hasSameHashCodeAs(second);
   }
 
   @Test

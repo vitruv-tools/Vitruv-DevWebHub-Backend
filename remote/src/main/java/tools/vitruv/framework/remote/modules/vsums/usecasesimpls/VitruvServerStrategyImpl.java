@@ -30,6 +30,8 @@ import tools.vitruv.framework.remote.modules.vsums.usecasesimpls.helpers.VitruvS
 @Component
 @RequiredArgsConstructor
 public class VitruvServerStrategyImpl implements VsumUseCasesStrategy, ViewUseCasesStrategy {
+  private static final String VIEW_UUID_HEADER = "view-uuid";
+
   private final VitruvServerProperties vitruvServerProperties;
   private final VitruvServerIdsManager vitruvServerIdsManager;
 
@@ -121,7 +123,7 @@ public class VitruvServerStrategyImpl implements VsumUseCasesStrategy, ViewUseCa
             .build();
 
     val response = sendRequest(request);
-    val viewId = UUID.fromString(response.headers().firstValue("view-uuid").orElseThrow());
+    val viewId = UUID.fromString(response.headers().firstValue(VIEW_UUID_HEADER).orElseThrow());
     vitruvServerIdsManager.addId(viewId);
     String responseBody = response.body();
 
@@ -135,7 +137,7 @@ public class VitruvServerStrategyImpl implements VsumUseCasesStrategy, ViewUseCa
         HttpRequest.newBuilder()
             .uri(URI.create(vitruvServerProperties.url() + "/vsum/view/derive-changes"))
             .header("Content-Type", "application/json")
-            .header("view-uuid", viewId.toString())
+            .header(VIEW_UUID_HEADER, viewId.toString())
             .method("PATCH", HttpRequest.BodyPublishers.ofString(resourceSetBody))
             .build();
     val response = sendRequest(request);
@@ -148,7 +150,7 @@ public class VitruvServerStrategyImpl implements VsumUseCasesStrategy, ViewUseCa
     val request =
         HttpRequest.newBuilder()
             .uri(URI.create(vitruvServerProperties.url() + "/vsum/view"))
-            .header("view-uuid", viewId.toString())
+            .header(VIEW_UUID_HEADER, viewId.toString())
             .GET()
             .build();
     val response = sendRequest(request);
@@ -161,7 +163,7 @@ public class VitruvServerStrategyImpl implements VsumUseCasesStrategy, ViewUseCa
     val request =
         HttpRequest.newBuilder()
             .uri(URI.create(vitruvServerProperties.url() + "/vsum/view"))
-            .header("view-uuid", viewId.toString())
+            .header(VIEW_UUID_HEADER, viewId.toString())
             .DELETE()
             .build();
     sendRequest(request);
@@ -177,7 +179,7 @@ public class VitruvServerStrategyImpl implements VsumUseCasesStrategy, ViewUseCa
 
     int statusCode = response.statusCode();
     if (statusCode < 200 || 300 <= statusCode) {
-      throw new RuntimeException(
+      throw new VitruvServerException(
           "Error with Vitruv-Server occurred: " + statusCode + "\n" + response.body());
     }
 
