@@ -100,7 +100,7 @@ public class UserProfileUseCases {
    */
   private static boolean applySignInFields(
       AppUser user, UpsertUserRequest request, String username, Instant now) {
-    String previousDisplayName = user.getDisplayName();
+    final String previousDisplayName = user.getDisplayName();
     String newDisplayName = displayName(request.displayName(), username);
     user.setDisplayName(newDisplayName);
     user.setEmail(blankToNull(request.email()));
